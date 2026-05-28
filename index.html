@@ -1,0 +1,2139 @@
+<!doctype html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#071019" />
+  <title>Genesis V4 — شبیه‌ساز جهان زنده</title>
+  <style>
+:root {
+  --bg: #071019;
+  --bg2: #0c1824;
+  --panel: rgba(13, 24, 36, .82);
+  --panel2: rgba(20, 34, 50, .84);
+  --ink: #eef7ff;
+  --muted: #9eb1c7;
+  --line: rgba(255,255,255,.12);
+  --accent: #78b7ff;
+  --accent2: #8df0b2;
+  --danger: #ff7878;
+  --warn: #ffd166;
+  --shadow: 0 24px 70px rgba(0,0,0,.38);
+}
+* { box-sizing: border-box; }
+html, body { height: 100%; }
+body {
+  margin: 0;
+  overflow: hidden;
+  color: var(--ink);
+  background:
+    radial-gradient(circle at 12% -5%, rgba(87, 157, 255, .22), transparent 31%),
+    radial-gradient(circle at 92% 7%, rgba(141, 240, 178, .16), transparent 26%),
+    linear-gradient(145deg, #04080e, #071019 46%, #0b1420);
+  font-family: Tahoma, Vazirmatn, Segoe UI, Arial, sans-serif;
+}
+button, input, select { font-family: inherit; }
+button {
+  border: 1px solid var(--line);
+  background: rgba(255,255,255,.075);
+  color: var(--ink);
+  border-radius: 14px;
+  padding: 9px 12px;
+  cursor: pointer;
+  transition: transform .12s ease, border-color .12s ease, background .12s ease;
+}
+button:hover { transform: translateY(-1px); background: rgba(255,255,255,.12); }
+button.active { outline: 2px solid rgba(120,183,255,.44); border-color: rgba(120,183,255,.9); background: rgba(120,183,255,.16); }
+button.primary { background: linear-gradient(135deg, #2276ff, #7048ff); border: 0; }
+button.danger { background: rgba(255,120,120,.18); border-color: rgba(255,120,120,.38); }
+button.good { background: rgba(141,240,178,.16); border-color: rgba(141,240,178,.35); }
+input, select {
+  background: rgba(255,255,255,.08);
+  color: var(--ink);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 9px 10px;
+  min-width: 0;
+}
+select option { background: #142232; color: #eef7ff; }
+input[type="range"] { padding: 0; accent-color: #78b7ff; }
+.glass { backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); }
+.app-shell { height: 100%; padding: 14px; display: flex; flex-direction: column; gap: 12px; }
+.topbar {
+  display: flex; align-items: center; justify-content: space-between; gap: 16px;
+  background: var(--panel); border: 1px solid var(--line); border-radius: 24px;
+  padding: 14px 16px; box-shadow: var(--shadow);
+}
+h1 { margin: 0 0 5px; font-size: 23px; letter-spacing: -.02em; }
+h1 span { color: var(--accent); font-size: 14px; font-weight: 700; }
+p { margin: 0; color: var(--muted); line-height: 1.65; }
+.top-actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 8px; }
+.stats { display: grid; grid-template-columns: repeat(8, minmax(86px, 1fr)); gap: 10px; }
+.stat-card { background: var(--panel); border: 1px solid var(--line); border-radius: 19px; padding: 10px 12px; min-height: 64px; box-shadow: 0 10px 26px rgba(0,0,0,.16); }
+.stat-card span { color: var(--muted); font-size: 12px; }
+.stat-card b { display: block; font-size: 18px; margin-top: 4px; }
+.main-layout { flex: 1; min-height: 0; display: grid; grid-template-columns: minmax(0, 1fr) 430px; gap: 12px; }
+.world-card { position: relative; overflow: hidden; background: #060b11; border: 1px solid var(--line); border-radius: 25px; box-shadow: var(--shadow); touch-action: none; }
+#worldCanvas { display: block; width: 100%; height: 100%; cursor: grab; }
+#worldCanvas:active { cursor: grabbing; }
+.hud-top { position: absolute; top: 12px; right: 12px; left: 12px; display: flex; justify-content: space-between; gap: 8px; pointer-events: none; }
+.pill { background: rgba(0,0,0,.42); border: 1px solid rgba(255,255,255,.13); color: rgba(238,247,255,.93); border-radius: 999px; padding: 8px 11px; font-size: 12px; box-shadow: 0 10px 24px rgba(0,0,0,.2); }
+.map-controls { position: absolute; left: 12px; top: 56px; display: grid; gap: 7px; }
+.map-controls button { width: 42px; height: 42px; padding: 0; background: rgba(0,0,0,.42); }
+.canvas-help { position: absolute; right: 12px; left: 12px; bottom: 12px; display: flex; justify-content: space-between; gap: 8px; pointer-events: none; }
+.canvas-help span { background: rgba(0,0,0,.42); border: 1px solid rgba(255,255,255,.13); color: rgba(238,247,255,.88); border-radius: 999px; padding: 8px 11px; font-size: 12px; }
+.side-panel { min-height: 0; overflow: auto; display: flex; flex-direction: column; gap: 12px; padding-left: 2px; scrollbar-width: thin; }
+.panel-block { background: var(--panel); border: 1px solid var(--line); border-radius: 23px; padding: 13px; box-shadow: var(--shadow); }
+.panel-block h2 { margin: 0 0 10px; font-size: 16px; }
+.empty-state { color: var(--muted); line-height: 1.8; }
+.tool-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+.god-row { display: grid; grid-template-columns: .75fr 1.25fr; gap: 10px; margin-bottom: 10px; }
+.god-row label, .sliders label, .designer-grid label, .command-box label { color: var(--muted); font-size: 12px; display: grid; gap: 6px; }
+.designer { margin: 12px 0; border: 1px solid var(--line); border-radius: 16px; padding: 10px; background: rgba(255,255,255,.035); }
+.designer summary { cursor: pointer; color: var(--accent2); margin-bottom: 10px; }
+.designer-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 9px; }
+.command-box { margin-top: 10px; display: grid; gap: 6px; }
+.command-line { display: grid; grid-template-columns: 1fr auto; gap: 7px; }
+.sliders { display: grid; gap: 10px; margin-top: 11px; }
+.person-head { display: flex; align-items: center; justify-content: space-between; gap: 9px; margin-bottom: 8px; }
+.person-head strong { font-size: 18px; }
+.badges { display: flex; flex-wrap: wrap; gap: 6px; }
+.badge { display: inline-flex; align-items: center; gap: 4px; border: 1px solid var(--line); background: rgba(255,255,255,.052); color: var(--muted); border-radius: 999px; padding: 5px 8px; font-size: 11px; }
+.thought-box { border: 1px solid rgba(120,183,255,.35); background: rgba(120,183,255,.11); border-radius: 18px; padding: 10px 11px; line-height: 1.75; margin: 10px 0; }
+.mini-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin: 9px 0; }
+.mini { background: rgba(255,255,255,.045); border: 1px solid var(--line); border-radius: 15px; padding: 8px; color: var(--muted); font-size: 12px; }
+.mini b { display: block; color: var(--ink); margin-top: 4px; font-size: 14px; }
+.bar { height: 7px; border-radius: 999px; background: rgba(255,255,255,.08); overflow: hidden; margin-top: 6px; }
+.bar i { display: block; height: 100%; background: linear-gradient(90deg, #78b7ff, #8df0b2); width: 0%; }
+.list { margin: 8px 0 0; padding: 0; list-style: none; display: grid; gap: 6px; }
+.list li { color: var(--muted); background: rgba(255,255,255,.04); border: 1px solid rgba(255,255,255,.055); border-radius: 12px; padding: 8px 9px; line-height: 1.65; }
+.subhead { margin: 13px 0 5px; color: var(--ink); font-size: 13px; }
+.species-panel { display: grid; gap: 7px; max-height: 420px; overflow: auto; }
+.species-card { display: grid; gap: 5px; padding: 9px; background: rgba(255,255,255,.04); border: 1px solid var(--line); border-radius: 14px; }
+.species-card header { display: flex; justify-content: space-between; align-items: center; gap: 7px; }
+.species-card b { color: var(--ink); }
+.species-card small { color: var(--muted); line-height: 1.45; }
+.checklist { display: grid; gap: 7px; max-height: 360px; overflow: auto; }
+.check-item { display: grid; grid-template-columns: auto 1fr; gap: 8px; align-items: start; padding: 8px; border: 1px solid var(--line); border-radius: 13px; background: rgba(255,255,255,.035); color: var(--muted); line-height: 1.55; font-size: 12px; }
+.check-item b { color: var(--ink); }
+.check-dot { width: 11px; height: 11px; margin-top: 5px; border-radius: 50%; background: var(--accent2); box-shadow: 0 0 0 4px rgba(141,240,178,.12); }
+.event-log { display: grid; gap: 7px; max-height: 300px; overflow: auto; }
+.event { color: var(--muted); background: rgba(255,255,255,.04); border: 1px solid var(--line); border-radius: 13px; padding: 8px 9px; line-height: 1.55; font-size: 12px; }
+.event strong { color: var(--ink); }
+.event.birth { border-color: rgba(141,240,178,.28); }
+.event.death, .event.conflict, .event.extinction { border-color: rgba(255,120,120,.35); }
+.event.evolution, .event.discovery, .event.domestication { border-color: rgba(120,183,255,.36); }
+.event.god { border-color: rgba(255,209,102,.38); }
+@media (max-width: 1180px) {
+  body { overflow: auto; }
+  .app-shell { min-height: 100%; height: auto; }
+  .main-layout { grid-template-columns: 1fr; }
+  .world-card { height: 68vh; min-height: 520px; }
+  .side-panel { overflow: visible; }
+  .stats { grid-template-columns: repeat(4, 1fr); }
+}
+@media (max-width: 720px) {
+  .app-shell { padding: 9px; gap: 9px; }
+  .topbar { flex-direction: column; align-items: stretch; border-radius: 19px; }
+  .top-actions { justify-content: stretch; }
+  .top-actions button { flex: 1 1 42%; }
+  h1 { font-size: 19px; }
+  .stats { grid-template-columns: repeat(2, 1fr); gap: 8px; }
+  .main-layout { gap: 9px; }
+  .world-card { height: 64vh; min-height: 460px; border-radius: 19px; }
+  .panel-block { border-radius: 18px; padding: 11px; }
+  .tool-grid, .designer-grid, .god-row { grid-template-columns: 1fr; }
+  .mini-grid { grid-template-columns: 1fr; }
+  .canvas-help { flex-direction: column; align-items: flex-start; }
+  .selected-card { position: sticky; top: 8px; z-index: 4; }
+}
+
+  </style>
+</head>
+<body>
+  <div id="app" class="app-shell">
+    <header class="topbar glass">
+      <div class="title-block">
+        <h1>Genesis V4 <span>جهان زنده، تکامل، یادگیری، خدا</span></h1>
+        <p>شبیه‌سازی عامل‌محور چندگونه‌ای: اکوسیستم، ژنتیک، شکار، یادگیری، فرهنگ، اهلی‌سازی و خلق/نابودی الهی.</p>
+      </div>
+      <div class="top-actions">
+        <button id="pauseBtn" class="primary">توقف</button>
+        <button id="saveBtn">ذخیره</button>
+        <button id="loadBtn">بارگذاری</button>
+        <button id="resetBtn" class="danger">جهان تازه</button>
+      </div>
+    </header>
+
+    <section id="stats" class="stats"></section>
+
+    <main class="main-layout">
+      <section class="world-card glass">
+        <canvas id="worldCanvas" aria-label="نمای زنده جهان"></canvas>
+        <div class="hud-top">
+          <div class="pill" id="seasonPill">فصل</div>
+          <div class="pill" id="toolPill">ابزار: مشاهده</div>
+        </div>
+        <div class="map-controls">
+          <button id="zoomInBtn">＋</button>
+          <button id="zoomOutBtn">－</button>
+          <button id="fitBtn">⤢</button>
+        </div>
+        <div class="canvas-help">
+          <span>لمس/کلیک روی موجود = خواندن فکر و حافظه</span>
+          <span>کشیدن روی نقشه = جابه‌جایی جهان</span>
+        </div>
+      </section>
+
+      <aside class="side-panel">
+        <section class="panel-block selected-card glass">
+          <h2>ذهن موجود انتخاب‌شده</h2>
+          <div id="selectedPanel" class="empty-state">هنوز موجودی انتخاب نشده. ابزار «مشاهده پنهانی» را بزن و روی هر موجود لمس کن.</div>
+        </section>
+
+        <section class="panel-block glass">
+          <h2>پنل خدا — خلق و نابودی</h2>
+          <div class="god-row">
+            <label>تعداد خلق
+              <input id="spawnCount" type="number" min="1" max="80" value="8" />
+            </label>
+            <label>شعاع اثر
+              <input id="brushSize" type="range" min="25" max="280" value="90" />
+              <span id="brushValue">۹۰</span>
+            </label>
+          </div>
+          <div id="godTools" class="tool-grid"></div>
+          <details class="designer" open>
+            <summary>آفرینش گونه سفارشی</summary>
+            <div class="designer-grid">
+              <label>نام گونه <input id="customName" value="موجود نو" /></label>
+              <label>رژیم غذایی
+                <select id="customDiet">
+                  <option value="herbivore">گیاه‌خوار</option>
+                  <option value="carnivore">گوشت‌خوار</option>
+                  <option value="omnivore">همه‌چیزخوار</option>
+                </select>
+              </label>
+              <label>سرعت <input id="customSpeed" type="range" min="0" max="100" value="52" /></label>
+              <label>قدرت <input id="customStrength" type="range" min="0" max="100" value="50" /></label>
+              <label>تهاجم <input id="customAggression" type="range" min="0" max="100" value="35" /></label>
+              <label>اهلی‌پذیری <input id="customTameness" type="range" min="0" max="100" value="45" /></label>
+              <label>یادگیری <input id="customLearning" type="range" min="0" max="100" value="30" /></label>
+            </div>
+          </details>
+          <div class="command-box">
+            <label>فرمان خلقت/نابودی</label>
+            <div class="command-line">
+              <input id="commandInput" placeholder="مثلاً: خلق گرگ ۱۰، خلق جنگل، نابود گرگ، باران" />
+              <button id="runCommandBtn" class="good">اجرا</button>
+            </div>
+          </div>
+          <div class="sliders">
+            <label>سرعت زمان
+              <input id="speedSlider" type="range" min="1" max="90" value="18" />
+              <span id="speedValue">۱۸ روز/ثانیه</span>
+            </label>
+            <label>سقف جمعیت موجودات
+              <input id="capSlider" type="range" min="120" max="1200" value="760" />
+              <span id="capValue">۷۶۰</span>
+            </label>
+          </div>
+        </section>
+
+        <section class="panel-block glass">
+          <h2>گونه‌ها و تکامل</h2>
+          <div id="speciesPanel" class="species-panel"></div>
+        </section>
+
+        <section class="panel-block glass">
+          <h2>چک‌لیست واقع‌گرایی</h2>
+          <div id="checklistPanel" class="checklist"></div>
+        </section>
+
+        <section class="panel-block glass">
+          <h2>رویدادهای جهان</h2>
+          <div id="eventLog" class="event-log"></div>
+        </section>
+      </aside>
+    </main>
+  </div>
+
+  <script>
+(() => {
+  'use strict';
+
+  const WORLD_W = 3200;
+  const WORLD_H = 1920;
+  const CELL = 40;
+  const COLS = Math.ceil(WORLD_W / CELL);
+  const ROWS = Math.ceil(WORLD_H / CELL);
+  const YEAR = 360;
+  const SAVE_KEY = 'genesis-v4-gaia-world';
+  const MAX_EVENT_LOG = 220;
+  const MAX_MEMORY = 18;
+
+  const nf = new Intl.NumberFormat('fa-IR');
+  const f1 = new Intl.NumberFormat('fa-IR', { maximumFractionDigits: 1 });
+
+  const canvas = document.getElementById('worldCanvas');
+  const ctx = canvas.getContext('2d');
+  const statsEl = document.getElementById('stats');
+  const selectedPanel = document.getElementById('selectedPanel');
+  const speciesPanel = document.getElementById('speciesPanel');
+  const checklistPanel = document.getElementById('checklistPanel');
+  const eventLog = document.getElementById('eventLog');
+  const godToolsEl = document.getElementById('godTools');
+  const pauseBtn = document.getElementById('pauseBtn');
+  const resetBtn = document.getElementById('resetBtn');
+  const saveBtn = document.getElementById('saveBtn');
+  const loadBtn = document.getElementById('loadBtn');
+  const speedSlider = document.getElementById('speedSlider');
+  const speedValue = document.getElementById('speedValue');
+  const capSlider = document.getElementById('capSlider');
+  const capValue = document.getElementById('capValue');
+  const spawnCountEl = document.getElementById('spawnCount');
+  const brushSizeEl = document.getElementById('brushSize');
+  const brushValue = document.getElementById('brushValue');
+  const commandInput = document.getElementById('commandInput');
+  const runCommandBtn = document.getElementById('runCommandBtn');
+  const seasonPill = document.getElementById('seasonPill');
+  const toolPill = document.getElementById('toolPill');
+  const zoomInBtn = document.getElementById('zoomInBtn');
+  const zoomOutBtn = document.getElementById('zoomOutBtn');
+  const fitBtn = document.getElementById('fitBtn');
+
+  const customEls = {
+    name: document.getElementById('customName'),
+    diet: document.getElementById('customDiet'),
+    speed: document.getElementById('customSpeed'),
+    strength: document.getElementById('customStrength'),
+    aggression: document.getElementById('customAggression'),
+    tameness: document.getElementById('customTameness'),
+    learning: document.getElementById('customLearning')
+  };
+
+  const geneKeys = [
+    'speed', 'strength', 'senses', 'aggression', 'sociability', 'fertility', 'immunity',
+    'lifespan', 'learning', 'tameness', 'digestionPlant', 'digestionMeat', 'toolUse',
+    'size', 'metabolism', 'stressResilience'
+  ];
+  const geneLabels = {
+    speed: 'سرعت', strength: 'قدرت', senses: 'حواس', aggression: 'تهاجم', sociability: 'اجتماع‌پذیری',
+    fertility: 'باروری', immunity: 'ایمنی', lifespan: 'طول‌عمر', learning: 'یادگیری', tameness: 'اهلی‌پذیری',
+    digestionPlant: 'گوارش گیاه', digestionMeat: 'گوارش گوشت', toolUse: 'ابزارسازی', size: 'اندازه',
+    metabolism: 'سوخت‌وساز', stressResilience: 'تاب‌آوری روانی'
+  };
+
+  const biomes = {
+    water: { name: 'آب', color: '#1e5f86', veg: 0, fertility: .2, hazard: .25 },
+    wetland: { name: 'تالاب', color: '#26766f', veg: 82, fertility: .86, hazard: .08 },
+    forest: { name: 'جنگل', color: '#1e5a36', veg: 100, fertility: .92, hazard: .05 },
+    grass: { name: 'علفزار', color: '#536f35', veg: 72, fertility: .76, hazard: .02 },
+    scrub: { name: 'بوته‌زار', color: '#77683f', veg: 48, fertility: .55, hazard: .03 },
+    desert: { name: 'بیابان', color: '#9b7a47', veg: 18, fertility: .25, hazard: .08 },
+    mountain: { name: 'کوهستان', color: '#6b7076', veg: 24, fertility: .28, hazard: .14 },
+    ash: { name: 'سوخته', color: '#33383f', veg: 4, fertility: .18, hazard: .11 }
+  };
+
+  const seasons = [
+    { name: 'بهار', temp: .52, rain: .72, growth: 1.42 },
+    { name: 'تابستان', temp: .82, rain: .36, growth: .92 },
+    { name: 'پاییز', temp: .46, rain: .58, growth: .82 },
+    { name: 'زمستان', temp: .16, rain: .28, growth: .42 }
+  ];
+
+  const names = {
+    humanMale: ['آرین','سام','کیان','دارا','مانی','هیراد','نیوان','راد','آرش','یاسان','ایلیا','نوید','بامداد','آبتین'],
+    humanFemale: ['رها','آوا','باران','هانا','لیانا','سارا','روژان','دریا','یلدا','مانیا','مهتاب','ترانه','نیایش','آیدا'],
+    groups: ['سپیده','رود','کوه','برگ','آتش','خاک','باد','دریا','ستاره','گرگین','باران','دره']
+  };
+
+  const checklist = [
+    ['اکوسیستم پایه', 'زمین شبکه‌ای با آب، تالاب، جنگل، علفزار، بیابان، کوه، فصل، باران، خشکسالی، آتش و رشد گیاه.'],
+    ['چندگونه‌ای بودن', 'انسان تنها گونه نیست؛ گیاه‌خوار، گوشت‌خوار، همه‌چیزخوار و گونه سفارشی با رفتار و ژنتیک جدا دارند.'],
+    ['بدن موجود زنده', 'سن، بلوغ، گرسنگی، تشنگی، انرژی، استرس، سلامت، زخم، بیماری، بارداری، پیری و مرگ.'],
+    ['ژنوم فردی', 'هر موجود آلل‌های دوگانه برای چندین ژن دارد؛ فنوتیپ از ترکیب آلل‌ها ساخته می‌شود.'],
+    ['وراثت و جهش', 'فرزند از پدر و مادر آلل می‌گیرد، جهش کوچک/نادر رخ می‌دهد و فشار انتخاب طبیعی نسل‌ها را تغییر می‌دهد.'],
+    ['تکامل همه موجودات', 'هر گونه می‌تواند با جدایی، فشار محیط و تفاوت ژنتیکی به زیرگونه تازه منشعب شود.'],
+    ['یادگیری فردی', 'انسان‌ها و حیوانات مکان آب/غذا/خطر را در حافظه نگه می‌دارند؛ انسان‌ها مهارت کسب می‌کنند.'],
+    ['فرهنگ و فناوری', 'گروه‌های انسانی ابزار، آتش، درمان، سرپناه، کشاورزی و اهلی‌سازی را کشف می‌کنند.'],
+    ['اهلی‌سازی و غلبه', 'انسان می‌تواند گونه‌های اهلی‌پذیر را رام کند؛ شکارچیان و انسان‌ها می‌توانند بر قلمرو غلبه کنند.'],
+    ['خودمختاری کامل', 'جنگ، صلح، شکار، مهاجرت، ازدواج، زادولد، رام‌سازی و کشف فناوری بدون دستور خدا رخ می‌دهد.'],
+    ['خدا بودن واقعی', 'خدا می‌تواند هر موجود، گونه، آب، جنگل، کوه، بیماری، جهش، شفا یا نابودی را خلق/اعمال کند.'],
+    ['قابل اجرا روی موبایل/ویندوز', 'Canvas لمسی، پنل واکنش‌گرا، فایل تک HTML برای GitHub Pages و نسخه پروژه کامل.']
+  ];
+
+  const sim = {
+    day: 0,
+    speed: 18,
+    paused: false,
+    maxAgents: 760,
+    terrain: [],
+    agents: [],
+    species: [],
+    groups: [],
+    events: [],
+    particles: [],
+    nextAgentId: 1,
+    nextSpeciesId: 1,
+    nextGroupId: 1,
+    selectedId: null,
+    hoverId: null,
+    godTool: 'inspect',
+    brush: 90,
+    spawnCount: 8,
+    seed: Math.floor(Math.random() * 1e9),
+    climate: { drought: 0, rainBoost: 0, temperature: .5 },
+    metrics: { births: 0, deaths: 0, hunts: 0, domestications: 0, speciation: 0, extinctions: 0, conflicts: 0, discoveries: 0, godActs: 0 },
+    lastDiplomacyDay: 0,
+    lastSpeciationDay: 0,
+    lastNaturalEventDay: 0,
+    lastPanelRefresh: -999,
+    accumulated: 0,
+    camera: { x: 0, y: 0, scale: 1, dpr: 1, dragging: false, moved: false, lastX: 0, lastY: 0, downX: 0, downY: 0 }
+  };
+
+  const godTools = [
+    { id: 'inspect', label: 'مشاهده پنهانی', title: 'روی هر موجود بزن و فکر، حافظه، ژن و خانواده‌اش را ببین.' },
+    { id: 'human', label: 'خلق انسان', title: 'انسان‌های تازه با ژنوم مستقل خلق می‌کند.' },
+    { id: 'deer', label: 'خلق گیاه‌خوار', title: 'گله گوزن/آهو خلق می‌کند.' },
+    { id: 'wolf', label: 'خلق شکارچی', title: 'گرگ یا شکارچی گوشت‌خوار خلق می‌کند.' },
+    { id: 'rabbit', label: 'خلق زادآور سریع', title: 'خرگوش‌های سریع و زادآور خلق می‌کند.' },
+    { id: 'custom', label: 'خلق گونه سفارشی', title: 'گونه‌ای با ژن‌های دلخواه می‌سازد.' },
+    { id: 'water', label: 'خلق آب/دریاچه', title: 'در زمین آب و تالاب ایجاد می‌کند.' },
+    { id: 'forest', label: 'خلق جنگل', title: 'پوشش گیاهی و زیستگاه می‌سازد.' },
+    { id: 'mountain', label: 'خلق کوه', title: 'مانع و معدن و زیستگاه سخت می‌سازد.' },
+    { id: 'desert', label: 'خلق بیابان', title: 'حاصل‌خیزی و آب را نابود می‌کند.' },
+    { id: 'foodBloom', label: 'رویش فراوان', title: 'غذا و گیاهان را ناگهان زیاد می‌کند.' },
+    { id: 'disease', label: 'خلق بیماری', title: 'بیماری جدید در شعاع ایجاد می‌کند.' },
+    { id: 'mutation', label: 'جهش الهی', title: 'ژنوم موجودات منطقه را جهش می‌دهد.' },
+    { id: 'heal', label: 'شفا/آرامش', title: 'سلامت، انرژی و آرامش موجودات منطقه را افزایش می‌دهد.' },
+    { id: 'destroy', label: 'نابودی مطلق', title: 'موجودات و پوشش منطقه را حذف می‌کند.', className: 'danger' }
+  ];
+
+  function rand(min = 0, max = 1) { return min + Math.random() * (max - min); }
+  function randi(min, max) { return Math.floor(rand(min, max + 1)); }
+  function choice(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
+  function clamp(v, min, max) { return Math.max(min, Math.min(max, v)); }
+  function lerp(a, b, t) { return a + (b - a) * t; }
+  function dist(a, b) { return Math.hypot(a.x - b.x, a.y - b.y); }
+  function distXY(a, x, y) { return Math.hypot(a.x - x, a.y - y); }
+  function chance(ratePerDay, dt = 1) { return Math.random() < 1 - Math.exp(-ratePerDay * dt); }
+  function yearOf(day = sim.day) { return Math.floor(day / YEAR) + 1; }
+  function dayOfYear(day = sim.day) { return Math.floor(day % YEAR) + 1; }
+  function currentSeason() { return seasons[Math.floor((dayOfYear() - 1) / (YEAR / 4)) % 4]; }
+  function escapeHtml(s) { return String(s).replace(/[&<>'"]/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', "'":'&#039;', '"':'&quot;' }[c])); }
+  function pct(v) { return `${f1.format(clamp(v, 0, 1) * 100)}٪`; }
+  function ageText(days) {
+    const y = Math.floor(days / YEAR);
+    const m = Math.floor((days % YEAR) / 30);
+    if (y <= 0) return `${nf.format(m)} ماهه`;
+    return `${nf.format(y)} سال و ${nf.format(m)} ماه`;
+  }
+  function hash2(x, y, salt = 0) {
+    let n = x * 374761393 + y * 668265263 + salt * 1442695041 + sim.seed;
+    n = (n ^ (n >> 13)) * 1274126177;
+    return ((n ^ (n >> 16)) >>> 0) / 4294967295;
+  }
+  function smoothNoise(x, y, scale, salt) {
+    const gx = x / scale, gy = y / scale;
+    const x0 = Math.floor(gx), y0 = Math.floor(gy);
+    const tx = gx - x0, ty = gy - y0;
+    const sx = tx * tx * (3 - 2 * tx), sy = ty * ty * (3 - 2 * ty);
+    const a = hash2(x0, y0, salt), b = hash2(x0 + 1, y0, salt);
+    const c = hash2(x0, y0 + 1, salt), d = hash2(x0 + 1, y0 + 1, salt);
+    return lerp(lerp(a, b, sx), lerp(c, d, sx), sy);
+  }
+  function hexToRgba(hex, alpha) {
+    const h = hex.replace('#', '');
+    const full = h.length === 3 ? h.split('').map(ch => ch + ch).join('') : h;
+    const n = parseInt(full, 16);
+    return `rgba(${(n >> 16) & 255},${(n >> 8) & 255},${n & 255},${alpha})`;
+  }
+  function mixColor(a, b, t) {
+    const ca = parseInt(a.slice(1), 16), cb = parseInt(b.slice(1), 16);
+    const ar = (ca >> 16) & 255, ag = (ca >> 8) & 255, ab = ca & 255;
+    const br = (cb >> 16) & 255, bg = (cb >> 8) & 255, bb = cb & 255;
+    const r = Math.round(lerp(ar, br, t)), g = Math.round(lerp(ag, bg, t)), bl = Math.round(lerp(ab, bb, t));
+    return `rgb(${r},${g},${bl})`;
+  }
+
+  function cellIndex(col, row) { return row * COLS + col; }
+  function cellAtXY(x, y) {
+    const col = clamp(Math.floor(x / CELL), 0, COLS - 1);
+    const row = clamp(Math.floor(y / CELL), 0, ROWS - 1);
+    return sim.terrain[cellIndex(col, row)];
+  }
+  function cellsInCircle(x, y, radius) {
+    const out = [];
+    const c0 = clamp(Math.floor((x - radius) / CELL), 0, COLS - 1);
+    const c1 = clamp(Math.floor((x + radius) / CELL), 0, COLS - 1);
+    const r0 = clamp(Math.floor((y - radius) / CELL), 0, ROWS - 1);
+    const r1 = clamp(Math.floor((y + radius) / CELL), 0, ROWS - 1);
+    for (let r = r0; r <= r1; r++) for (let c = c0; c <= c1; c++) {
+      const cell = sim.terrain[cellIndex(c, r)];
+      const cx = cell.x + CELL / 2, cy = cell.y + CELL / 2;
+      if (Math.hypot(cx - x, cy - y) <= radius + CELL * .7) out.push(cell);
+    }
+    return out;
+  }
+
+  function addEvent(text, type = 'info') {
+    sim.events.unshift({ day: Math.floor(sim.day), text, type });
+    if (sim.events.length > MAX_EVENT_LOG) sim.events.pop();
+  }
+  function addMemory(a, text, weight = 1) {
+    if (!a || a.status !== 'alive') return;
+    a.memory.unshift({ day: Math.floor(sim.day), text, weight });
+    if (a.memory.length > MAX_MEMORY) a.memory.pop();
+  }
+
+  function generateTerrain() {
+    sim.terrain = [];
+    for (let row = 0; row < ROWS; row++) {
+      for (let col = 0; col < COLS; col++) {
+        const x = col * CELL, y = row * CELL;
+        const nx = col / COLS, ny = row / ROWS;
+        const e = .52 * smoothNoise(col, row, 9, 10) + .32 * smoothNoise(col, row, 23, 11) + .16 * smoothNoise(col, row, 4, 12);
+        let m = .58 * smoothNoise(col, row, 11, 20) + .30 * smoothNoise(col, row, 25, 21) + .12 * smoothNoise(col, row, 5, 22);
+        const riverCenter = COLS * (.18 + .62 * (ny + .12 * Math.sin(ny * Math.PI * 3)) % 1);
+        const riverWave = COLS * (.08 * Math.sin(ny * 8.4 + smoothNoise(0, row, 7, 99) * 4));
+        const riverDist = Math.abs(col - (riverCenter + riverWave));
+        const lake = Math.hypot(nx - .70, ny - .68) < .105 || Math.hypot(nx - .28, ny - .23) < .075;
+        let biome;
+        if (riverDist < 1.05 || lake) biome = 'water';
+        else {
+          m += clamp(1.8 / Math.max(1.1, riverDist), 0, .42);
+          if (e > .79) biome = 'mountain';
+          else if (m > .76) biome = 'wetland';
+          else if (m > .60) biome = 'forest';
+          else if (m > .38) biome = 'grass';
+          else if (m > .24) biome = 'scrub';
+          else biome = 'desert';
+        }
+        const meta = biomes[biome];
+        const vegMax = meta.veg * rand(.75, 1.15);
+        sim.terrain.push({
+          col, row, x, y,
+          elevation: e,
+          moisture: clamp(m, 0, 1),
+          biome,
+          fertility: clamp(meta.fertility + rand(-.08, .08), 0, 1),
+          vegetation: biome === 'water' ? 0 : rand(vegMax * .42, vegMax),
+          maxVegetation: biome === 'water' ? 0 : vegMax,
+          water: biome === 'water' ? 100 : biome === 'wetland' ? rand(25, 60) : clamp((m - .35) * 70, 0, 40),
+          mineral: biome === 'mountain' ? rand(70, 100) : e > .67 ? rand(20, 60) : rand(0, 18),
+          ash: 0
+        });
+      }
+    }
+  }
+
+  function growTerrain(dt = 1) {
+    const season = currentSeason();
+    const drought = sim.climate.drought;
+    const rain = clamp(season.rain + sim.climate.rainBoost - drought, 0, 1.25);
+    for (const cell of sim.terrain) {
+      if (cell.biome === 'water') { cell.water = 100; continue; }
+      if (cell.ash > 0) cell.ash = Math.max(0, cell.ash - .018 * dt);
+      const waterGain = (rain * cell.moisture * 1.5 - season.temp * .45 - drought * .8) * dt;
+      cell.water = clamp(cell.water + waterGain, 0, cell.biome === 'wetland' ? 85 : 55);
+      const growth = (cell.fertility * season.growth * (cell.water / 45 + .18) - .12 - drought * .35 - cell.ash * .4) * dt;
+      cell.vegetation = clamp(cell.vegetation + growth, 0, cell.maxVegetation * (1 - cell.ash * .55));
+      if (cell.water < 3 && season.temp > .78 && chance(.000012 * (cell.vegetation + 8), dt)) startFire(cell.x + CELL / 2, cell.y + CELL / 2, rand(90, 180));
+    }
+    sim.climate.rainBoost *= .985;
+    sim.climate.drought *= .997;
+  }
+
+  function baseSpeciesTemplates() {
+    return {
+      human: {
+        code: 'human', name: 'انسان', icon: 'ان', role: 'omnivore', color: '#f4c37e', human: true, tamable: false,
+        adultAge: 16 * YEAR, gestation: 280, litterMin: 1, litterMax: 1, lifespanDays: 72 * YEAR,
+        diet: { plant: .58, meat: .42 },
+        genes: { speed:.48, strength:.46, senses:.55, aggression:.34, sociability:.78, fertility:.47, immunity:.50, lifespan:.68, learning:.82, tameness:.18, digestionPlant:.60, digestionMeat:.54, toolUse:.86, size:.54, metabolism:.47, stressResilience:.54 }
+      },
+      deer: {
+        code: 'deer', name: 'گوزن', icon: 'گ', role: 'herbivore', color: '#d6a766', human: false, tamable: true,
+        adultAge: 2 * YEAR, gestation: 230, litterMin: 1, litterMax: 2, lifespanDays: 15 * YEAR,
+        diet: { plant: 1, meat: 0 },
+        genes: { speed:.72, strength:.42, senses:.74, aggression:.12, sociability:.62, fertility:.54, immunity:.48, lifespan:.42, learning:.27, tameness:.55, digestionPlant:.86, digestionMeat:.05, toolUse:.03, size:.46, metabolism:.58, stressResilience:.42 }
+      },
+      wolf: {
+        code: 'wolf', name: 'گرگ', icon: 'گـ', role: 'carnivore', color: '#9aa4b2', human: false, tamable: true,
+        adultAge: 2 * YEAR, gestation: 65, litterMin: 2, litterMax: 5, lifespanDays: 13 * YEAR,
+        diet: { plant: 0, meat: 1 },
+        genes: { speed:.68, strength:.62, senses:.82, aggression:.64, sociability:.58, fertility:.44, immunity:.48, lifespan:.38, learning:.40, tameness:.35, digestionPlant:.08, digestionMeat:.88, toolUse:.02, size:.42, metabolism:.62, stressResilience:.58 }
+      },
+      rabbit: {
+        code: 'rabbit', name: 'خرگوش', icon: 'خ', role: 'herbivore', color: '#ead6b5', human: false, tamable: true,
+        adultAge: .45 * YEAR, gestation: 31, litterMin: 3, litterMax: 7, lifespanDays: 5 * YEAR,
+        diet: { plant: 1, meat: 0 },
+        genes: { speed:.64, strength:.14, senses:.70, aggression:.05, sociability:.44, fertility:.88, immunity:.38, lifespan:.20, learning:.20, tameness:.64, digestionPlant:.82, digestionMeat:.02, toolUse:.01, size:.14, metabolism:.75, stressResilience:.33 }
+      },
+      boar: {
+        code: 'boar', name: 'گراز', icon: 'غ', role: 'omnivore', color: '#8c654d', human: false, tamable: true,
+        adultAge: 1.3 * YEAR, gestation: 115, litterMin: 2, litterMax: 5, lifespanDays: 11 * YEAR,
+        diet: { plant: .7, meat: .3 },
+        genes: { speed:.45, strength:.58, senses:.55, aggression:.42, sociability:.32, fertility:.62, immunity:.58, lifespan:.32, learning:.26, tameness:.52, digestionPlant:.72, digestionMeat:.36, toolUse:.01, size:.48, metabolism:.56, stressResilience:.52 }
+      }
+    };
+  }
+
+  function addSpecies(template, parentId = null, note = '') {
+    const id = sim.nextSpeciesId++;
+    const sp = {
+      id,
+      code: template.code || `custom-${id}`,
+      name: template.name || `گونه ${nf.format(id)}`,
+      icon: template.icon || '؟',
+      role: template.role || 'omnivore',
+      color: template.color || randomColor(id),
+      human: !!template.human,
+      tamable: !!template.tamable,
+      adultAge: template.adultAge || 2 * YEAR,
+      gestation: template.gestation || 120,
+      litterMin: template.litterMin || 1,
+      litterMax: template.litterMax || 2,
+      lifespanDays: template.lifespanDays || 12 * YEAR,
+      diet: template.diet || { plant: .5, meat: .5 },
+      baseGenes: { ...template.genes },
+      founderGenes: { ...template.genes },
+      parentId,
+      bornDay: Math.floor(sim.day),
+      note,
+      extinct: false,
+      domesticatedCount: 0,
+      kills: 0
+    };
+    for (const key of geneKeys) if (sp.baseGenes[key] == null) sp.baseGenes[key] = .5;
+    sim.species.push(sp);
+    return sp;
+  }
+  function randomColor(id) {
+    const hue = (id * 83 + 40) % 360;
+    return `hsl(${hue}, 62%, 62%)`;
+  }
+  function getSpecies(id) { return sim.species.find(s => s.id === id); }
+  function speciesByCode(code) { return sim.species.find(s => s.code === code); }
+  function speciesPopulation(id, aliveOnly = true) { return sim.agents.filter(a => a.speciesId === id && (!aliveOnly || a.status === 'alive')).length; }
+  function livingAgents() { return sim.agents.filter(a => a.status === 'alive'); }
+
+  function defaultGenome(species, spread = .07) {
+    const genome = {};
+    for (const key of geneKeys) {
+      const base = species.baseGenes[key] ?? .5;
+      genome[key] = [clamp(base + rand(-spread, spread), 0, 1), clamp(base + rand(-spread, spread), 0, 1)];
+    }
+    return genome;
+  }
+  function mutateAllele(v, rate = .016) {
+    if (Math.random() > rate) return { value: v, changed: false, delta: 0 };
+    const big = Math.random() < .08;
+    const delta = big ? rand(-.24, .24) : rand(-.07, .07);
+    return { value: clamp(v + delta, 0, 1), changed: true, delta };
+  }
+  function inheritGenome(mother, father, species, kin = 0) {
+    const genome = {}, mutations = [];
+    const pressure = 1 + kin * 1.6;
+    for (const key of geneKeys) {
+      const a0 = mother.genome[key] || [species.baseGenes[key], species.baseGenes[key]];
+      const b0 = father.genome[key] || [species.baseGenes[key], species.baseGenes[key]];
+      const pickedA = a0[Math.random() < .5 ? 0 : 1];
+      const pickedB = b0[Math.random() < .5 ? 0 : 1];
+      const ma = mutateAllele(pickedA, .014 * pressure);
+      const mb = mutateAllele(pickedB, .014 * pressure);
+      genome[key] = [ma.value, mb.value];
+      if (ma.changed) mutations.push(`${geneLabels[key]} ${ma.delta > 0 ? '↑' : '↓'}`);
+      if (mb.changed) mutations.push(`${geneLabels[key]} ${mb.delta > 0 ? '↑' : '↓'}`);
+    }
+    return { genome, mutations };
+  }
+  function phenotype(a) {
+    if (!a._phen || a._phenDay !== sim.day) {
+      const p = {};
+      for (const key of geneKeys) {
+        const pair = a.genome[key] || [.5, .5];
+        p[key] = clamp((pair[0] + pair[1]) / 2, 0, 1);
+      }
+      const load = a.geneticLoad || 0;
+      p.immunity = clamp(p.immunity - load * .34, 0, 1);
+      p.fertility = clamp(p.fertility - load * .25, 0, 1);
+      p.stressResilience = clamp(p.stressResilience - load * .2, 0, 1);
+      p.viability = clamp(1 - load * .55, .1, 1.1);
+      a._phen = p; a._phenDay = sim.day;
+    }
+    return a._phen;
+  }
+  function geneAverageForAgents(list) {
+    const out = {};
+    for (const key of geneKeys) out[key] = 0;
+    if (!list.length) return out;
+    for (const a of list) {
+      const p = phenotype(a);
+      for (const key of geneKeys) out[key] += p[key];
+    }
+    for (const key of geneKeys) out[key] /= list.length;
+    return out;
+  }
+
+  function createGroup({ speciesId, name, x, y }) {
+    const id = sim.nextGroupId++;
+    const group = {
+      id, speciesId, name: name || choice(names.groups), x, y,
+      members: [],
+      culture: { cooperation: rand(.42, .82), aggression: rand(.16, .58), curiosity: rand(.34, .78), spirituality: rand(.18, .74), migration: rand(.28, .86) },
+      knowledge: { foraging:.18, hunting:.10, healing:.04, crafting:.06, taming:.02, farming:.01, language:.10, social:.10 },
+      tech: { language:false, tools:false, fire:false, shelter:false, medicine:false, agriculture:false, domestication:false },
+      storage: { food: 0, wood: 0, medicine: 0 },
+      relations: {},
+      domesticatedSpecies: {}
+    };
+    for (const other of sim.groups) {
+      group.relations[other.id] = rand(-8, 18);
+      other.relations[group.id] = group.relations[other.id];
+    }
+    sim.groups.push(group);
+    return group;
+  }
+  function getGroup(id) { return sim.groups.find(g => g.id === id); }
+  function updateGroupCenters() {
+    for (const g of sim.groups) {
+      const members = sim.agents.filter(a => a.status === 'alive' && a.groupId === g.id);
+      g.members = members.map(a => a.id);
+      if (members.length) {
+        g.x = members.reduce((s, a) => s + a.x, 0) / members.length;
+        g.y = members.reduce((s, a) => s + a.y, 0) / members.length;
+      }
+    }
+  }
+
+  function makeAgentName(species, gender) {
+    if (species.human) return gender === 'female' ? choice(names.humanFemale) : choice(names.humanMale);
+    return `${species.name} ${nf.format(sim.nextAgentId)}`;
+  }
+  function randomLandPosition(preferBiome = null) {
+    for (let i = 0; i < 1200; i++) {
+      const cell = choice(sim.terrain);
+      if (cell.biome === 'water' || cell.biome === 'mountain') continue;
+      if (preferBiome && cell.biome !== preferBiome && Math.random() < .72) continue;
+      return { x: cell.x + rand(4, CELL - 4), y: cell.y + rand(4, CELL - 4) };
+    }
+    return { x: rand(150, WORLD_W - 150), y: rand(150, WORLD_H - 150) };
+  }
+  function createAgent({ speciesId, x, y, gender = Math.random() < .5 ? 'male' : 'female', age = 0, genome = null, parents = [], groupId = null, domesticatedBy = null, geneticLoad = 0, mutations = [] }) {
+    if (sim.agents.filter(a => a.status === 'alive').length >= sim.maxAgents) return null;
+    const sp = getSpecies(speciesId);
+    if (!sp) return null;
+    const id = sim.nextAgentId++;
+    const p = { x: x ?? randomLandPosition().x, y: y ?? randomLandPosition().y };
+    const a = {
+      id, speciesId, name: makeAgentName(sp, gender), gender, age,
+      x: clamp(p.x, 10, WORLD_W - 10), y: clamp(p.y, 10, WORLD_H - 10), vx: 0, vy: 0,
+      status: 'alive', bornDay: Math.floor(sim.day), generation: parents.length ? (Math.max(...parents.map(pid => findAgent(pid)?.generation || 0)) + 1) : 1,
+      genome: genome || defaultGenome(sp), geneticLoad, mutations: mutations || [],
+      parents, children: [], mateId: null, pregnancy: null,
+      hp: rand(78, 100), hunger: rand(10, 35), thirst: rand(10, 35), energy: rand(60, 100), stress: rand(5, 26),
+      disease: null, wound: 0, inventory: { food: 0, herb: 0, wood: 0 },
+      groupId, domesticatedBy, domesticated: !!domesticatedBy, trust: domesticatedBy ? rand(.42, .74) : 0,
+      skills: sp.human ? { foraging:rand(.05,.22), hunting:rand(.02,.16), healing:rand(0,.08), crafting:rand(0,.10), taming:rand(0,.08), farming:0, social:rand(.08,.28) } : { memory: rand(.05, .22) },
+      memory: [], known: { water: [], food: [], danger: [] },
+      target: null, goal: 'explore', thought: 'جهان را حس می‌کنم.', lastBirth: -9999, lastActionDay: 0,
+      kills: 0, eatenBy: null, graveUntil: 0
+    };
+    if (groupId) {
+      const g = getGroup(groupId);
+      if (g) g.members.push(id);
+    }
+    sim.agents.push(a);
+    return a;
+  }
+  function findAgent(id) { return sim.agents.find(a => a.id === id); }
+
+  function setupWorld() {
+    sim.day = 0;
+    sim.paused = false;
+    sim.maxAgents = Number(capSlider.value || 760);
+    sim.speed = Number(speedSlider.value || 18);
+    sim.terrain = [];
+    sim.agents = [];
+    sim.species = [];
+    sim.groups = [];
+    sim.events = [];
+    sim.particles = [];
+    sim.nextAgentId = 1;
+    sim.nextSpeciesId = 1;
+    sim.nextGroupId = 1;
+    sim.selectedId = null;
+    sim.hoverId = null;
+    sim.godTool = 'inspect';
+    sim.brush = Number(brushSizeEl.value || 90);
+    sim.spawnCount = Number(spawnCountEl.value || 8);
+    sim.seed = Math.floor(Math.random() * 1e9);
+    sim.climate = { drought: 0, rainBoost: 0, temperature: .5 };
+    sim.metrics = { births: 0, deaths: 0, hunts: 0, domestications: 0, speciation: 0, extinctions: 0, conflicts: 0, discoveries: 0, godActs: 0 };
+    sim.lastDiplomacyDay = 0;
+    sim.lastSpeciationDay = 0;
+    sim.lastNaturalEventDay = 0;
+    generateTerrain();
+    const templates = baseSpeciesTemplates();
+    const human = addSpecies(templates.human);
+    const deer = addSpecies(templates.deer);
+    const wolf = addSpecies(templates.wolf);
+    const rabbit = addSpecies(templates.rabbit);
+    const boar = addSpecies(templates.boar);
+
+    const start = randomLandPosition('grass');
+    const group = createGroup({ speciesId: human.id, name: 'آغاز', x: start.x, y: start.y });
+    for (let i = 0; i < 10; i++) {
+      const a = createAgent({ speciesId: human.id, x: start.x + rand(-75, 75), y: start.y + rand(-75, 75), age: rand(4, 34) * YEAR, groupId: group.id });
+      if (a) addMemory(a, 'جهان تازه است؛ باید آب، غذا و امنیت پیدا کنیم.', 2);
+    }
+    spawnSpecies(deer.id, 90, null, 'grass');
+    spawnSpecies(rabbit.id, 120, null, 'grass');
+    spawnSpecies(boar.id, 45, null, 'forest');
+    spawnSpecies(wolf.id, 26, null, 'scrub');
+    addEvent('جهان زنده آغاز شد: انسان‌ها، شکارچیان، گیاه‌خواران، فصل‌ها و ژنوم‌ها بیدار شدند.', 'god');
+    resizeCanvas();
+    updateToolButtons();
+    refreshPanels(true);
+  }
+
+  function spawnSpecies(speciesId, count, around = null, preferBiome = null, groupId = null) {
+    const created = [];
+    for (let i = 0; i < count; i++) {
+      const pos = around ? { x: around.x + rand(-sim.brush, sim.brush), y: around.y + rand(-sim.brush, sim.brush) } : randomLandPosition(preferBiome);
+      const a = createAgent({ speciesId, x: pos.x, y: pos.y, age: rand(0.1, 4) * YEAR, groupId });
+      if (a) created.push(a);
+    }
+    return created;
+  }
+
+  function simulateDay() {
+    sim.day += 1;
+    const season = currentSeason();
+    sim.climate.temperature = clamp(season.temp + rand(-.04, .04) + sim.climate.drought * .18, 0, 1.2);
+    growTerrain(1);
+    if (sim.day - sim.lastNaturalEventDay > 18) naturalEvents();
+
+    // Randomize update order slightly to avoid systematic privilege.
+    const alive = livingAgents().sort(() => Math.random() - .5);
+    for (const a of alive) updateAgent(a, 1);
+    updateGroupCenters();
+    updateHumanGroups();
+    if (sim.day - sim.lastDiplomacyDay > 20) updateDiplomacy();
+    if (sim.day - sim.lastSpeciationDay > 80) checkSpeciation();
+    cleanupAgents();
+    sim.particles = sim.particles.filter(p => --p.life > 0);
+  }
+
+  function updateAgent(a, dt) {
+    if (a.status !== 'alive') return;
+    const sp = getSpecies(a.speciesId);
+    const ph = phenotype(a);
+    const cell = cellAtXY(a.x, a.y);
+    a.age += dt;
+    a.hunger = clamp(a.hunger + (.16 + ph.metabolism * .20 + ph.size * .10) * dt, 0, 120);
+    a.thirst = clamp(a.thirst + (.22 + sim.climate.temperature * .18 + ph.metabolism * .08) * dt, 0, 130);
+    a.energy = clamp(a.energy - (.05 + ph.metabolism * .07) * dt, 0, 110);
+    a.stress = clamp(a.stress + (a.hunger > 80 || a.thirst > 80 ? .35 : -.08) * dt - ph.stressResilience * .05, 0, 100);
+
+    if (cell.biome === 'water') {
+      a.energy -= .5 * dt;
+      a.stress += .25 * dt;
+      moveToward(a, nearestLand(a.x, a.y), 1.1);
+    }
+    if (cell.biome === 'mountain') a.energy -= .18 * dt;
+
+    if (a.age > expectedLife(a) * .82) a.hp -= (a.age / expectedLife(a) - .78) * .12 * dt;
+    if (a.hunger > 95) a.hp -= (a.hunger - 95) * .035 * dt;
+    if (a.thirst > 95) a.hp -= (a.thirst - 95) * .055 * dt;
+    if (a.energy < 8) a.hp -= .04 * dt;
+    if (a.wound > 0) { a.hp -= a.wound * .002 * dt; a.wound = Math.max(0, a.wound - (.03 + ph.immunity * .05) * dt); }
+    updateDisease(a, dt);
+    updatePregnancy(a, dt);
+    if (a.hp <= 0) return killAgent(a, 'ضعف بدن و محیط', 'death');
+
+    const threat = nearestThreat(a, 190 + ph.senses * 180);
+    if (threat && (a.hp < 45 || ph.aggression < .55 || combatPower(threat) > combatPower(a) * 1.1)) {
+      a.goal = 'flee';
+      a.thought = sp.human ? `باید از ${getSpecies(threat.speciesId).name} دور شوم؛ خطر نزدیک است.` : 'بوی خطر نزدیک است.';
+      rememberPlace(a, 'danger', threat.x, threat.y);
+      fleeFrom(a, threat, 1.25 + ph.speed * 1.8);
+      a.stress = clamp(a.stress + .7 * dt, 0, 100);
+      return;
+    }
+
+    if (a.thirst > 54) return actThirst(a, sp, ph);
+    if (a.hunger > 58) return actHunger(a, sp, ph);
+    if (sp.human && actHumanSpecial(a, sp, ph)) return;
+    if (canSeekMate(a, sp, ph) && Math.random() < .38) return actMate(a, sp, ph);
+    if (a.energy < 26) return actRest(a, sp, ph);
+    return actExplore(a, sp, ph);
+  }
+
+  function expectedLife(a) {
+    const sp = getSpecies(a.speciesId);
+    const ph = phenotype(a);
+    return sp.lifespanDays * (.62 + ph.lifespan * .76) * (a.geneticLoad ? (1 - a.geneticLoad * .18) : 1);
+  }
+  function isAdult(a, sp = getSpecies(a.speciesId)) { return a.age >= sp.adultAge; }
+  function canSeekMate(a, sp, ph) {
+    if (!isAdult(a, sp) || a.pregnancy || a.age > expectedLife(a) * .82) return false;
+    if (a.hunger > 58 || a.thirst > 58 || a.energy < 40 || a.hp < 55) return false;
+    if (sim.day - a.lastBirth < sp.gestation * 1.45) return false;
+    return Math.random() < (.014 + ph.fertility * .02);
+  }
+
+  function actThirst(a, sp, ph) {
+    const cell = cellAtXY(a.x, a.y);
+    if (cell.water > 18 || cell.biome === 'water' || cell.biome === 'wetland') {
+      const amount = Math.min(cell.water, 9 + ph.size * 7);
+      if (cell.biome !== 'water') cell.water = Math.max(0, cell.water - amount * .3);
+      a.thirst = clamp(a.thirst - 34 - ph.stressResilience * 10, 0, 100);
+      a.energy = clamp(a.energy + 2, 0, 100);
+      a.goal = 'drink';
+      a.thought = sp.human ? 'آب پیدا کردم؛ بدنم دوباره آرام می‌شود.' : 'آب.';
+      rememberPlace(a, 'water', a.x, a.y);
+      return;
+    }
+    const known = nearestKnown(a, 'water');
+    const target = known || findBestCellNear(a, 22, c => (c.water + (c.biome === 'water' ? 130 : 0) + (c.biome === 'wetland' ? 60 : 0)) - distanceCellToAgent(c, a) * .05);
+    a.goal = 'water';
+    a.thought = sp.human ? 'تشنگی دارد تصمیمم را می‌سازد؛ دنبال آب می‌گردم.' : 'دنبال آب.';
+    moveToward(a, target || wanderTarget(a), 1.2 + ph.speed * 1.7);
+  }
+
+  function actHunger(a, sp, ph) {
+    if (sp.role === 'carnivore' || (sp.role === 'omnivore' && ph.digestionMeat > ph.digestionPlant && Math.random() < .55)) return actHunt(a, sp, ph);
+    if (sp.human && Math.random() < .32 + (a.skills.hunting || 0) * .4 && ph.digestionMeat > .35) {
+      const prey = nearestPrey(a, 220 + ph.senses * 260, false);
+      if (prey) return actHunt(a, sp, ph, prey);
+    }
+    return actForage(a, sp, ph);
+  }
+
+  function actForage(a, sp, ph) {
+    const cell = cellAtXY(a.x, a.y);
+    const eatPower = 3 + ph.digestionPlant * 8 + ph.size * 2;
+    if (cell.vegetation > 14) {
+      const eaten = Math.min(cell.vegetation, eatPower);
+      cell.vegetation -= eaten;
+      a.hunger = clamp(a.hunger - eaten * (sp.human ? .75 : 1.05), 0, 100);
+      a.energy = clamp(a.energy + eaten * .05, 0, 100);
+      a.goal = 'forage';
+      if (sp.human) {
+        learn(a, 'foraging', .006);
+        const g = getGroup(a.groupId);
+        if (g && eaten > 5 && Math.random() < .25) g.storage.food = clamp(g.storage.food + eaten * .05, 0, 160);
+        a.thought = 'خوراک از زمین می‌گیرم؛ این مکان را به یاد می‌سپارم.';
+      } else a.thought = 'می‌چرم.';
+      rememberPlace(a, 'food', a.x, a.y);
+      return;
+    }
+    const known = nearestKnown(a, 'food');
+    const target = known || findBestCellNear(a, 18, c => c.vegetation + c.fertility * 18 - distanceCellToAgent(c, a) * .04);
+    a.goal = 'food';
+    a.thought = sp.human ? 'غذا کم است؛ باید جای پربارتری پیدا کنم.' : 'دنبال گیاه.';
+    moveToward(a, target || wanderTarget(a), 1.05 + ph.speed * 1.55);
+  }
+
+  function actHunt(a, sp, ph, forcedPrey = null) {
+    const prey = forcedPrey || nearestPrey(a, 240 + ph.senses * 260, true);
+    if (!prey) return actForage(a, sp, ph);
+    const d = dist(a, prey);
+    a.goal = 'hunt';
+    a.thought = sp.human ? `رد ${getSpecies(prey.speciesId).name} را می‌گیرم؛ شاید شکار امروز نجاتمان دهد.` : 'بوی شکار.';
+    if (d < 18 + ph.size * 14) attack(a, prey, 'hunt');
+    else moveToward(a, prey, 1.16 + ph.speed * 1.85);
+  }
+
+  function actHumanSpecial(a, sp, ph) {
+    const g = getGroup(a.groupId);
+    if (!g) return false;
+    if (g.storage.food > 1 && a.hunger > 42) {
+      const take = Math.min(g.storage.food, 2.4);
+      g.storage.food -= take;
+      a.hunger = clamp(a.hunger - take * 6, 0, 100);
+      a.thought = 'از ذخیره گروه کمی غذا برداشتم؛ زندگی گروهی یعنی دوام بیشتر.';
+      learn(a, 'social', .002);
+      return true;
+    }
+    const wounded = nearestGroupMate(a, 90, q => q.hp < 62 || q.disease || q.wound > 4);
+    if (wounded && (a.skills.healing || 0) + g.knowledge.healing > .16 && a.energy > 42) {
+      wounded.hp = clamp(wounded.hp + .8 + (a.skills.healing || 0) * 1.8, 0, 100);
+      wounded.wound = clamp(wounded.wound - .6, 0, 100);
+      if (wounded.disease && Math.random() < .005 + (a.skills.healing || 0) * .018 + g.knowledge.healing * .014) wounded.disease = null;
+      a.energy -= .55;
+      a.goal = 'heal';
+      a.thought = `دارم به ${wounded.name} کمک می‌کنم؛ درد یک نفر درد گروه است.`;
+      learn(a, 'healing', .012);
+      addMemory(wounded, `${a.name} از من مراقبت کرد.`, 2);
+      return true;
+    }
+    if (g.tech.domestication || (a.skills.taming || 0) > .22) {
+      const animal = nearestTamable(a, 85);
+      if (animal && animal.hunger < 82 && Math.random() < .12) {
+        tryDomesticate(a, animal);
+        return true;
+      }
+    }
+    if (g.tech.agriculture && cellAtXY(a.x, a.y).biome !== 'water' && Math.random() < .18) {
+      const cell = cellAtXY(a.x, a.y);
+      cell.vegetation = clamp(cell.vegetation + 1.8 + g.knowledge.farming * 3, 0, cell.maxVegetation * 1.15);
+      g.storage.food = clamp(g.storage.food + .09 + g.knowledge.farming * .08, 0, 200);
+      learn(a, 'farming', .008);
+      a.energy -= .25;
+      a.goal = 'farm';
+      a.thought = 'دارم زمین را بهتر می‌کنم؛ شاید آینده از همین دانه‌ها ساخته شود.';
+      return true;
+    }
+    if (a.energy > 55 && Math.random() < .055 + ph.learning * .035) {
+      const key = choice(['crafting','hunting','foraging','healing','taming','social']);
+      learn(a, key, .010 + ph.learning * .006);
+      a.goal = 'learn';
+      a.thought = `چیزی درباره ${skillLabel(key)} فهمیدم؛ تجربه دارد در ذهنم می‌ماند.`;
+      return true;
+    }
+    return false;
+  }
+
+  function actMate(a, sp, ph) {
+    if (a.gender !== 'female') { actExplore(a, sp, ph); return; }
+    const mate = nearestMate(a, 360 + ph.senses * 140);
+    a.goal = 'mate';
+    if (!mate) { a.thought = sp.human ? 'شاید خانواده‌ای بسازم، اما هنوز کسی مناسب نزدیک نیست.' : 'دنبال جفت.'; return actExplore(a, sp, ph); }
+    const d = dist(a, mate);
+    if (d < 24 + ph.sociability * 16) startPregnancy(a, mate);
+    else {
+      a.thought = sp.human ? `به ${mate.name} فکر می‌کنم؛ نزدیکی، خطر و آینده همه با هم‌اند.` : 'جفت نزدیک است.';
+      moveToward(a, mate, 1.0 + ph.speed * 1.45);
+    }
+  }
+
+  function actRest(a, sp, ph) {
+    a.goal = 'rest';
+    a.energy = clamp(a.energy + 1.4 + ph.stressResilience * .8, 0, 100);
+    a.stress = clamp(a.stress - .35 * ph.stressResilience, 0, 100);
+    a.thought = sp.human ? 'باید آرام بگیرم؛ بدن هم قانون خودش را دارد.' : 'استراحت.';
+    const g = getGroup(a.groupId);
+    if (g && distXY(a, g.x, g.y) > 160) moveToward(a, g, .5 + ph.speed * .6);
+  }
+
+  function actExplore(a, sp, ph) {
+    if (a.domesticated && a.groupId) {
+      const g = getGroup(a.groupId);
+      if (g && distXY(a, g.x, g.y) > 180) {
+        a.goal = 'follow-humans';
+        a.thought = 'کنار گروه امن‌تر است.';
+        return moveToward(a, g, .8 + ph.speed * 1.1);
+      }
+    }
+    const g = getGroup(a.groupId);
+    if (sp.human && g && distXY(a, g.x, g.y) > 260 + g.culture.migration * 220) {
+      a.goal = 'return-group';
+      a.thought = 'نباید از گروه خیلی دور شوم؛ تنهایی گران تمام می‌شود.';
+      return moveToward(a, g, .75 + ph.speed * 1.1);
+    }
+    a.goal = 'explore';
+    const target = wanderTarget(a);
+    a.thought = sp.human ? randomHumanThought(a) : randomAnimalThought(sp);
+    moveToward(a, target, .62 + ph.speed * 1.15);
+  }
+
+  function randomHumanThought(a) {
+    const opts = [
+      'جهان پر از نشانه است؛ آب، غذا، خطر و خاطره.',
+      'هر قدمی که برمی‌دارم چیزی به من یاد می‌دهد.',
+      'اگر گروه دوام بیاورد، فرزندانمان جهان دیگری خواهند دید.',
+      'باید بفهمم کجا امن است و کجا نه.',
+      'چیزی در ذهنم می‌گوید آینده از تصمیم‌های کوچک ساخته می‌شود.'
+    ];
+    const g = getGroup(a.groupId);
+    if (g && Object.values(g.tech).some(Boolean)) opts.push('دانش گروه مثل آتش پنهان بین ما می‌چرخد.');
+    return choice(opts);
+  }
+  function randomAnimalThought(sp) {
+    if (sp.role === 'carnivore') return choice(['بوها راه را نشان می‌دهند.', 'باید نیرو ذخیره کنم و شکار پیدا کنم.', 'قلمرو زنده است.']);
+    if (sp.role === 'herbivore') return choice(['گیاه، آب، فاصله از خطر.', 'باید گوش بدهم؛ حرکت‌های دور مهم‌اند.', 'گله امنیت می‌آورد.']);
+    return choice(['زمین بوهای زیادی دارد.', 'غذا و خطر در یک مسیرند.', 'حرکت یعنی زنده ماندن.']);
+  }
+
+  function moveToward(a, target, speedFactor = 1) {
+    if (!target) return;
+    const ph = phenotype(a);
+    const dx = target.x - a.x, dy = target.y - a.y;
+    const d = Math.hypot(dx, dy) || 1;
+    const cell = cellAtXY(a.x, a.y);
+    const terrainPenalty = cell.biome === 'mountain' ? .62 : cell.biome === 'water' ? .35 : cell.biome === 'forest' ? .86 : 1;
+    const speed = (1.6 + ph.speed * 5.3) * speedFactor * terrainPenalty;
+    a.vx = dx / d * speed;
+    a.vy = dy / d * speed;
+    a.x = clamp(a.x + a.vx, 3, WORLD_W - 3);
+    a.y = clamp(a.y + a.vy, 3, WORLD_H - 3);
+    a.energy = clamp(a.energy - speed * .015, 0, 100);
+  }
+  function fleeFrom(a, threat, speedFactor) {
+    const dx = a.x - threat.x, dy = a.y - threat.y;
+    const d = Math.hypot(dx, dy) || 1;
+    moveToward(a, { x: a.x + dx / d * 220, y: a.y + dy / d * 220 }, speedFactor);
+  }
+  function wanderTarget(a) {
+    if (!a.target || Math.random() < .035 || distXY(a, a.target.x, a.target.y) < 35) {
+      const ph = phenotype(a);
+      const angle = rand(0, Math.PI * 2);
+      const r = rand(90, 330 + ph.curiosity * 180 || 260);
+      a.target = { x: clamp(a.x + Math.cos(angle) * r, 10, WORLD_W - 10), y: clamp(a.y + Math.sin(angle) * r, 10, WORLD_H - 10) };
+    }
+    return a.target;
+  }
+  function nearestLand(x, y) {
+    let best = { x, y }, bestScore = -Infinity;
+    for (const c of cellsInCircle(x, y, 260)) {
+      if (c.biome === 'water') continue;
+      const score = c.fertility + c.vegetation * .01 - Math.hypot(c.x + CELL / 2 - x, c.y + CELL / 2 - y) * .002;
+      if (score > bestScore) { bestScore = score; best = { x: c.x + CELL / 2, y: c.y + CELL / 2 }; }
+    }
+    return best;
+  }
+  function distanceCellToAgent(c, a) { return Math.hypot(c.x + CELL / 2 - a.x, c.y + CELL / 2 - a.y); }
+  function findBestCellNear(a, radiusCells, scoreFn) {
+    const cx = Math.floor(a.x / CELL), cy = Math.floor(a.y / CELL);
+    let best = null, bestScore = -Infinity;
+    for (let r = Math.max(0, cy - radiusCells); r <= Math.min(ROWS - 1, cy + radiusCells); r++) {
+      for (let c = Math.max(0, cx - radiusCells); c <= Math.min(COLS - 1, cx + radiusCells); c++) {
+        const cell = sim.terrain[cellIndex(c, r)];
+        const score = scoreFn(cell);
+        if (score > bestScore) { bestScore = score; best = { x: cell.x + CELL / 2, y: cell.y + CELL / 2, cell }; }
+      }
+    }
+    return best;
+  }
+  function rememberPlace(a, type, x, y) {
+    const list = a.known[type] || (a.known[type] = []);
+    if (list.length > 10) list.pop();
+    if (!list.some(p => Math.hypot(p.x - x, p.y - y) < 80)) list.unshift({ x, y, day: Math.floor(sim.day) });
+  }
+  function nearestKnown(a, type) {
+    const list = a.known[type] || [];
+    let best = null, bestD = Infinity;
+    for (const p of list) {
+      if (sim.day - p.day > 240) continue;
+      const d = distXY(a, p.x, p.y);
+      if (d < bestD) { bestD = d; best = p; }
+    }
+    return best;
+  }
+
+  function nearestThreat(a, range) {
+    const sp = getSpecies(a.speciesId);
+    let best = null, bestScore = 0;
+    for (const q of sim.agents) {
+      if (q.status !== 'alive' || q.id === a.id) continue;
+      const qsp = getSpecies(q.speciesId);
+      if (q.domesticated && a.groupId && q.groupId === a.groupId) continue;
+      let dangerous = false;
+      if (qsp.role === 'carnivore' && q.speciesId !== a.speciesId && !q.domesticated) dangerous = true;
+      if (sp.human && qsp.role === 'carnivore') dangerous = true;
+      if (qsp.human && !sp.human && q.goal === 'hunt') dangerous = true;
+      if (!dangerous) continue;
+      const d = dist(a, q);
+      if (d > range) continue;
+      const score = combatPower(q) / Math.max(1, d);
+      if (score > bestScore) { bestScore = score; best = q; }
+    }
+    return best;
+  }
+  function nearestPrey(a, range, hungry) {
+    const sp = getSpecies(a.speciesId);
+    let best = null, bestScore = -Infinity;
+    for (const q of sim.agents) {
+      if (q.status !== 'alive' || q.id === a.id || q.speciesId === a.speciesId) continue;
+      const qsp = getSpecies(q.speciesId);
+      if (q.domesticated && a.groupId && q.groupId === a.groupId) continue;
+      if (sp.human && qsp.human) continue;
+      if (sp.role === 'carnivore' && qsp.role === 'carnivore' && combatPower(q) > combatPower(a) * .72) continue;
+      if (qsp.human && !sp.human && !hungry && Math.random() < .85) continue;
+      const d = dist(a, q);
+      if (d > range) continue;
+      const score = (phenotype(q).size * 40 + 18) - d * .11 - combatPower(q) * .09;
+      if (score > bestScore) { bestScore = score; best = q; }
+    }
+    return best;
+  }
+  function nearestMate(a, range) {
+    let best = null, bestScore = -Infinity;
+    const sp = getSpecies(a.speciesId);
+    for (const q of sim.agents) {
+      if (q.status !== 'alive' || q.id === a.id || q.speciesId !== a.speciesId || q.gender === a.gender || q.pregnancy) continue;
+      if (!isAdult(q, sp) || q.hunger > 65 || q.thirst > 65 || q.hp < 55 || q.energy < 35) continue;
+      const d = dist(a, q);
+      if (d > range) continue;
+      const kin = kinship(a, q);
+      if (kin > .75) continue;
+      const rel = relationScore(a, q) + phenotype(q).fertility * 35 - d * .08 - kin * 80;
+      if (rel > bestScore) { bestScore = rel; best = q; }
+    }
+    return best;
+  }
+  function nearestGroupMate(a, range, filter = () => true) {
+    if (!a.groupId) return null;
+    let best = null, bestD = Infinity;
+    for (const q of sim.agents) {
+      if (q.status !== 'alive' || q.id === a.id || q.groupId !== a.groupId || !filter(q)) continue;
+      const d = dist(a, q);
+      if (d < range && d < bestD) { bestD = d; best = q; }
+    }
+    return best;
+  }
+  function nearestTamable(a, range) {
+    let best = null, bestD = Infinity;
+    for (const q of sim.agents) {
+      if (q.status !== 'alive' || q.id === a.id || q.domesticated) continue;
+      const sp = getSpecies(q.speciesId);
+      if (!sp.tamable || sp.human) continue;
+      const d = dist(a, q);
+      if (d < range && d < bestD) { bestD = d; best = q; }
+    }
+    return best;
+  }
+
+  function relationScore(a, b) {
+    let score = 0;
+    if (a.groupId && b.groupId && a.groupId === b.groupId) score += 30;
+    if (a.mateId === b.id || b.mateId === a.id) score += 40;
+    if (a.memory.some(m => m.text.includes(b.name))) score += 8;
+    return score;
+  }
+  function kinship(a, b) {
+    if (!a || !b) return 0;
+    if (a.parents.includes(b.id) || b.parents.includes(a.id)) return 1;
+    if (a.parents.length && b.parents.some(id => a.parents.includes(id))) return .72;
+    const agp = grandparents(a), bgp = grandparents(b);
+    if (agp.some(id => bgp.includes(id))) return .38;
+    if (a.parents.some(id => bgp.includes(id)) || b.parents.some(id => agp.includes(id))) return .48;
+    return 0;
+  }
+  function grandparents(a) {
+    const out = [];
+    for (const pid of a.parents) {
+      const p = findAgent(pid);
+      if (p) out.push(...p.parents);
+    }
+    return out;
+  }
+
+  function combatPower(a) {
+    const sp = getSpecies(a.speciesId);
+    const ph = phenotype(a);
+    let power = 8 + ph.strength * 30 + ph.size * 22 + ph.speed * 10 + ph.aggression * 12 + a.hp * .12;
+    if (sp.human) {
+      const g = getGroup(a.groupId);
+      power += (a.skills.hunting || 0) * 25 + (a.skills.crafting || 0) * 12;
+      if (g?.tech.tools) power += 16;
+      if (g?.tech.fire) power += 8;
+    }
+    if (a.wound) power -= a.wound * .2;
+    if (a.energy < 20) power *= .7;
+    return Math.max(1, power);
+  }
+  function attack(attacker, target, reason) {
+    if (attacker.status !== 'alive' || target.status !== 'alive') return;
+    const asp = getSpecies(attacker.speciesId), tsp = getSpecies(target.speciesId);
+    const ap = combatPower(attacker), tp = combatPower(target) * rand(.55, 1.25);
+    const damage = clamp((ap - tp * .34) * rand(.12, .36), 2, 42);
+    target.hp -= damage;
+    target.wound = clamp(target.wound + damage * .48, 0, 100);
+    attacker.energy = clamp(attacker.energy - 4, 0, 100);
+    target.stress = clamp(target.stress + 20, 0, 100);
+    if (asp.human) learn(attacker, 'hunting', .012);
+    if (target.hp <= 0) {
+      killAgent(target, `${asp.name} او را شکار کرد`, 'death');
+      attacker.hunger = clamp(attacker.hunger - 44 - phenotype(target).size * 18, 0, 100);
+      attacker.kills += 1;
+      asp.kills += 1;
+      sim.metrics.hunts += 1;
+      if (asp.human) addMemory(attacker, `امروز ${tsp.name} را شکار کردم.`, 3);
+      addEvent(`${attacker.name} از گونه ${asp.name}، ${target.name} را شکار کرد.`, 'death');
+    } else if (tp > ap * 1.12 && Math.random() < .22) {
+      attacker.hp -= clamp(tp * .05, 2, 16);
+      attacker.wound += 3;
+      if (attacker.hp <= 0) killAgent(attacker, `${tsp.name} در دفاع او را کشت`, 'death');
+    }
+  }
+  function killAgent(a, reason = 'مرگ', type = 'death') {
+    if (!a || a.status !== 'alive') return;
+    a.status = 'dead';
+    a.deathDay = Math.floor(sim.day);
+    a.graveUntil = sim.day + (getSpecies(a.speciesId)?.human ? 360 : 80);
+    a.thought = '...';
+    sim.metrics.deaths += 1;
+    if (a.groupId) {
+      const g = getGroup(a.groupId);
+      if (g) g.members = g.members.filter(id => id !== a.id);
+    }
+    if (a.mateId) {
+      const mate = findAgent(a.mateId);
+      if (mate && mate.status === 'alive') { mate.mateId = null; addMemory(mate, `${a.name} را از دست دادم.`, 5); }
+    }
+    addEvent(`${a.name} (${getSpecies(a.speciesId)?.name || 'گونه ناشناخته'}) مرد: ${reason}.`, type);
+  }
+
+  function startPregnancy(mother, father) {
+    const sp = getSpecies(mother.speciesId);
+    if (mother.gender !== 'female' || mother.pregnancy || father.gender === mother.gender) return;
+    const kin = kinship(mother, father);
+    if (kin > .82) return;
+    mother.pregnancy = { fatherId: father.id, day: 0, gestation: sp.gestation, kin };
+    mother.mateId = father.id;
+    father.mateId = mother.id;
+    mother.energy -= 4;
+    mother.thought = sp.human ? `بار زندگی تازه‌ای را حس می‌کنم؛ آینده شاید درون من است.` : 'باردار.';
+    addMemory(mother, `${father.name} پدر فرزند احتمالی من شد.`, 3);
+    if (sp.human) addMemory(father, `${mother.name} شاید فرزندی از من بیاورد.`, 2);
+  }
+  function updatePregnancy(a, dt) {
+    if (!a.pregnancy) return;
+    const sp = getSpecies(a.speciesId);
+    a.pregnancy.day += dt;
+    a.hunger = clamp(a.hunger + .05 * dt, 0, 120);
+    a.energy = clamp(a.energy - .035 * dt, 0, 100);
+    if (a.pregnancy.day >= a.pregnancy.gestation) giveBirth(a);
+  }
+  function giveBirth(mother) {
+    const sp = getSpecies(mother.speciesId);
+    const father = findAgent(mother.pregnancy?.fatherId);
+    const kin = mother.pregnancy?.kin || 0;
+    if (!father || father.status !== 'alive') { mother.pregnancy = null; return; }
+    let litter = randi(sp.litterMin, sp.litterMax);
+    if (sp.human && Math.random() < .035) litter = 2;
+    const ph = phenotype(mother);
+    if (Math.random() > ph.fertility * .94 + .04) litter = Math.max(0, litter - 1);
+    const babies = [];
+    for (let i = 0; i < litter; i++) {
+      const inherited = inheritGenome(mother, father, sp, kin);
+      const geneticLoad = clamp((mother.geneticLoad + father.geneticLoad) / 2 + kin * rand(.04, .14) + (inherited.mutations.length > 2 ? .02 : 0), 0, .9);
+      const child = createAgent({ speciesId: sp.id, x: mother.x + rand(-22, 22), y: mother.y + rand(-22, 22), age: 0, parents: [mother.id, father.id], groupId: mother.groupId, domesticatedBy: mother.domesticatedBy, genome: inherited.genome, geneticLoad, mutations: inherited.mutations });
+      if (!child) continue;
+      child.hp = clamp(72 + phenotype(child).viability * 28 - geneticLoad * 20, 5, 100);
+      mother.children.push(child.id); father.children.push(child.id);
+      babies.push(child);
+      if (inherited.mutations.length) addMemory(child, `با جهش ژنتیکی به دنیا آمدم: ${inherited.mutations.slice(0, 3).join('، ')}`, 3);
+    }
+    mother.lastBirth = sim.day;
+    mother.pregnancy = null;
+    mother.energy = clamp(mother.energy - 10, 0, 100);
+    sim.metrics.births += babies.length;
+    if (babies.length) {
+      addEvent(`${mother.name} از گونه ${sp.name}، ${nf.format(babies.length)} نوزاد آورد.`, 'birth');
+      addMemory(mother, `${nf.format(babies.length)} نوزاد به دنیا آوردم.`, 5);
+      if (sp.human) addMemory(father, `فرزندی تازه در گروه ما به دنیا آمد.`, 4);
+      spawnParticles(mother.x, mother.y, '#8df0b2', 12);
+    }
+  }
+
+  function updateDisease(a, dt) {
+    if (!a.disease) {
+      const crowd = countNearby(a, 60);
+      const ph = phenotype(a);
+      if (crowd > 9 && chance(.0007 * crowd * (1.15 - ph.immunity), dt)) infect(a, null, 'تب ازدحام');
+      return;
+    }
+    const ph = phenotype(a);
+    a.hp -= a.disease.severity * (1.2 - ph.immunity) * dt;
+    a.energy -= a.disease.severity * .45 * dt;
+    a.stress += a.disease.severity * .35 * dt;
+    if (chance(.018 * ph.immunity + .003, dt)) {
+      addMemory(a, `از ${a.disease.name} جان سالم به بردم.`, 3);
+      a.disease = null;
+    } else if (chance(a.disease.contagion * .04, dt)) {
+      for (const q of nearbyAgents(a.x, a.y, 55)) {
+        if (q.id !== a.id && q.status === 'alive' && !q.disease && Math.random() > phenotype(q).immunity * .72) infect(q, a, a.disease.name);
+      }
+    }
+  }
+  function infect(a, source = null, name = null) {
+    const diseases = ['تب خاکستری', 'سرفه سرد', 'زخم رود', 'تب ازدحام', 'بی‌حالی سرخ'];
+    a.disease = { name: name || choice(diseases), severity: rand(.16, .72), contagion: rand(.22, .86), born: Math.floor(sim.day) };
+    addMemory(a, `بدنم بیمار شد: ${a.disease.name}.`, 4);
+    if (!source || Math.random() < .05) addEvent(`${a.name} بیمار شد: ${a.disease.name}.`, 'disease');
+  }
+
+  function learn(a, key, amount) {
+    if (!a || !getSpecies(a.speciesId)?.human) return;
+    a.skills[key] = clamp((a.skills[key] || 0) + amount * (0.7 + phenotype(a).learning), 0, 1.2);
+    const g = getGroup(a.groupId);
+    if (g) g.knowledge[key] = clamp((g.knowledge[key] || 0) + amount * (.28 + g.culture.cooperation * .45), 0, 2.2);
+  }
+  function skillLabel(k) {
+    return ({ foraging:'خوراک‌یابی', hunting:'شکار', healing:'درمان', crafting:'ابزارسازی', taming:'رام‌سازی', farming:'کشاورزی', social:'اجتماع' })[k] || k;
+  }
+  function updateHumanGroups() {
+    for (const g of sim.groups) {
+      const members = sim.agents.filter(a => a.status === 'alive' && a.groupId === g.id && getSpecies(a.speciesId)?.human);
+      if (!members.length) continue;
+      for (const a of members) {
+        if (a.inventory.wood > 0) { g.storage.wood += a.inventory.wood; a.inventory.wood = 0; }
+        if (a.inventory.herb > 0) { g.storage.medicine += a.inventory.herb; a.inventory.herb = 0; }
+      }
+      if (g.storage.food > 0) g.storage.food = Math.max(0, g.storage.food - members.length * .018);
+      if (g.storage.wood > 0) g.storage.wood = Math.max(0, g.storage.wood - members.length * .002);
+      discoverTechnologies(g, members);
+      maybeSplitGroup(g, members);
+      supportDomesticated(g);
+    }
+  }
+  function discoverTechnologies(g, members) {
+    const k = g.knowledge;
+    const discoveries = [
+      ['language', (k.language || 0) + (k.social || 0), 0.55, 'زبان نمادین در گروه شکل گرفت؛ تجربه‌ها بهتر منتقل می‌شوند.'],
+      ['tools', k.crafting + k.hunting * .55, 0.72, 'ابزار سنگی و چوبی ساخته شد؛ شکار و دفاع بهتر می‌شود.'],
+      ['fire', (k.crafting || 0) + (k.foraging || 0) * .35 + (k.social || 0) * .25, 1.05, 'آتش مهار شد؛ شب، غذا و ترس معنای تازه گرفتند.'],
+      ['shelter', (k.crafting || 0) + (k.social || 0) * .35, 1.18, 'سرپناه‌های ساده ساخته شد؛ کودکان و زخمی‌ها بهتر می‌مانند.'],
+      ['medicine', k.healing + k.foraging * .45, 0.96, 'شناخت گیاهان دارویی در گروه تثبیت شد.'],
+      ['agriculture', (k.farming || 0) + (k.foraging || 0) * .4 + (k.social || 0) * .2, 1.08, 'کشت آگاهانه آغاز شد؛ گروه می‌تواند زمین را تغییر دهد.'],
+      ['domestication', (k.taming || 0) + (k.social || 0) * .35 + (k.foraging || 0) * .12, 0.86, 'رام‌سازی آگاهانه ممکن شد؛ حیوان می‌تواند همسفر انسان شود.']
+    ];
+    for (const [tech, score, threshold, text] of discoveries) {
+      if (!g.tech[tech] && score > threshold && Math.random() < .10) {
+        g.tech[tech] = true;
+        sim.metrics.discoveries++;
+        addEvent(`گروه ${g.name}: ${text}`, 'discovery');
+        for (const m of members.slice(0, 5)) addMemory(m, text, 4);
+      }
+    }
+  }
+  function maybeSplitGroup(g, members) {
+    if (members.length < 22 || Math.random() > .012) return;
+    const stress = members.reduce((s, a) => s + a.stress + a.hunger * .25 + a.thirst * .25, 0) / members.length;
+    if (stress < 48 && Math.random() > .25) return;
+    const emigrants = members.filter((_, i) => i % 3 === 0).slice(0, Math.floor(members.length * .34));
+    if (emigrants.length < 5) return;
+    const ng = createGroup({ speciesId: g.speciesId, name: choice(names.groups), x: g.x + rand(-220, 220), y: g.y + rand(-220, 220) });
+    ng.knowledge = { ...g.knowledge };
+    for (const k in ng.knowledge) ng.knowledge[k] *= rand(.72, .96);
+    ng.tech = { ...g.tech };
+    for (const a of emigrants) { a.groupId = ng.id; addMemory(a, `از گروه ${g.name} جدا شدم و گروه ${ng.name} شکل گرفت.`, 4); }
+    addEvent(`بخشی از گروه ${g.name} جدا شد و گروه ${ng.name} را ساخت.`, 'discovery');
+  }
+  function supportDomesticated(g) {
+    const animals = sim.agents.filter(a => a.status === 'alive' && a.groupId === g.id && a.domesticated && !getSpecies(a.speciesId)?.human);
+    if (!animals.length) return;
+    for (const a of animals) {
+      if (distXY(a, g.x, g.y) > 230) moveToward(a, g, .6 + phenotype(a).speed);
+      if (Math.random() < .015) g.storage.food = clamp(g.storage.food + .18 + phenotype(a).size * .12, 0, 220);
+      a.stress = clamp(a.stress - .08, 0, 100);
+    }
+  }
+  function tryDomesticate(human, animal) {
+    const sp = getSpecies(animal.speciesId);
+    const g = getGroup(human.groupId);
+    if (!sp?.tamable || !g) return false;
+    const hp = phenotype(human), ap = phenotype(animal);
+    const chanceValue = .08 + (human.skills.taming || 0) * .22 + g.knowledge.taming * .13 + hp.sociability * .08 + ap.tameness * .20 - ap.aggression * .11 - animal.stress * .002;
+    if (Math.random() < chanceValue) {
+      animal.domesticated = true;
+      animal.domesticatedBy = g.id;
+      animal.groupId = g.id;
+      animal.trust = clamp(animal.trust + .55, 0, 1);
+      sp.domesticatedCount++;
+      g.domesticatedSpecies[sp.id] = (g.domesticatedSpecies[sp.id] || 0) + 1;
+      learn(human, 'taming', .025);
+      sim.metrics.domestications++;
+      addMemory(human, `${sp.name} را آرام کردم؛ غلبه همیشه کشتن نیست.`, 5);
+      addMemory(animal, `انسان ${human.name} دیگر فقط خطر نیست؛ غذا و امنیت هم هست.`, 3);
+      addEvent(`${human.name} یک ${sp.name} را رام کرد.`, 'domestication');
+      return true;
+    }
+    animal.stress += 4;
+    human.thought = `${sp.name} هنوز به من اعتماد ندارد.`;
+    learn(human, 'taming', .004);
+    return false;
+  }
+
+  function updateDiplomacy() {
+    sim.lastDiplomacyDay = sim.day;
+    for (let i = 0; i < sim.groups.length; i++) for (let j = i + 1; j < sim.groups.length; j++) {
+      const a = sim.groups[i], b = sim.groups[j];
+      const am = a.members.length, bm = b.members.length;
+      if (!am || !bm) continue;
+      const d = Math.hypot(a.x - b.x, a.y - b.y);
+      if (d > 520) continue;
+      const stressA = groupStress(a), stressB = groupStress(b);
+      const rel = ((a.relations[b.id] ?? 0) + (b.relations[a.id] ?? 0)) / 2;
+      const tradeChance = .08 + a.culture.cooperation * .08 + b.culture.cooperation * .08 + rel * .002;
+      if (Math.random() < tradeChance && stressA < 65 && stressB < 65) {
+        a.relations[b.id] = clamp((a.relations[b.id] || 0) + rand(1, 5), -100, 100);
+        b.relations[a.id] = clamp((b.relations[a.id] || 0) + rand(1, 5), -100, 100);
+        a.storage.food = clamp(a.storage.food + rand(-2, 4), 0, 220);
+        b.storage.food = clamp(b.storage.food + rand(-2, 4), 0, 220);
+        addEvent(`گروه ${a.name} و ${b.name} دادوستد کردند؛ صلح از نیاز و سود زاده شد.`, 'discovery');
+      }
+      const conflictPressure = (stressA + stressB) / 100 + (a.culture.aggression + b.culture.aggression) * .55 - rel * .008 - (a.culture.cooperation + b.culture.cooperation) * .25;
+      if (conflictPressure > 1.15 && Math.random() < .15) groupConflict(a, b);
+    }
+  }
+  function groupStress(g) {
+    const members = sim.agents.filter(a => a.status === 'alive' && a.groupId === g.id && getSpecies(a.speciesId)?.human);
+    if (!members.length) return 0;
+    return members.reduce((s, a) => s + a.hunger * .34 + a.thirst * .34 + a.stress * .32, 0) / members.length;
+  }
+  function groupConflict(a, b) {
+    const ma = sim.agents.filter(x => x.status === 'alive' && x.groupId === a.id && getSpecies(x.speciesId)?.human);
+    const mb = sim.agents.filter(x => x.status === 'alive' && x.groupId === b.id && getSpecies(x.speciesId)?.human);
+    if (!ma.length || !mb.length) return;
+    const powerA = ma.reduce((s, x) => s + combatPower(x), 0) * rand(.75, 1.25);
+    const powerB = mb.reduce((s, x) => s + combatPower(x), 0) * rand(.75, 1.25);
+    const losers = powerA > powerB ? mb : ma;
+    const winners = powerA > powerB ? ma : mb;
+    const deaths = Math.min(losers.length, randi(0, Math.max(1, Math.floor(losers.length * .18))));
+    for (let i = 0; i < deaths; i++) killAgent(choice(losers.filter(x => x.status === 'alive')), 'در درگیری گروهی کشته شد', 'conflict');
+    for (const x of losers.concat(winners).slice(0, 10)) { x.wound += rand(0, 8); x.stress += rand(5, 18); addMemory(x, 'درگیری گروهی رخ داد؛ جهان گاهی از کمبود خشن می‌شود.', 4); }
+    a.relations[b.id] = clamp((a.relations[b.id] || 0) - rand(8, 18), -100, 100);
+    b.relations[a.id] = clamp((b.relations[a.id] || 0) - rand(8, 18), -100, 100);
+    sim.metrics.conflicts++;
+    addEvent(`درگیری میان گروه ${a.name} و ${b.name} رخ داد؛ علتش فشار منابع و رابطه بد بود، نه فرمان خدا.`, 'conflict');
+  }
+
+  function naturalEvents() {
+    sim.lastNaturalEventDay = sim.day;
+    const r = Math.random();
+    if (r < .08) {
+      sim.climate.drought = clamp(sim.climate.drought + rand(.08, .22), 0, .72);
+      addEvent('خشکسالی آرام بالا آمد؛ آب و گیاه سخت‌تر پیدا می‌شود.', 'climate');
+    } else if (r < .17) {
+      sim.climate.rainBoost = clamp(sim.climate.rainBoost + rand(.18, .38), 0, .8);
+      addEvent('باران‌های پیاپی زمین را زنده‌تر کرد.', 'climate');
+    } else if (r < .20) {
+      const pos = randomLandPosition();
+      startFire(pos.x, pos.y, rand(110, 240));
+    }
+  }
+  function startFire(x, y, radius) {
+    for (const cell of cellsInCircle(x, y, radius)) {
+      if (cell.biome === 'water' || cell.biome === 'wetland') continue;
+      cell.vegetation *= rand(.06, .32);
+      cell.ash = clamp(cell.ash + rand(.5, 1), 0, 1);
+      if (Math.random() < .45) cell.biome = 'ash';
+    }
+    for (const a of nearbyAgents(x, y, radius * .8)) {
+      a.hp -= rand(3, 18);
+      a.stress += rand(12, 28);
+      if (a.hp <= 0) killAgent(a, 'در آتش‌سوزی مرد', 'death');
+      else addMemory(a, 'آتش از زمین گذشت؛ جای امن معنی تازه‌ای گرفت.', 3);
+    }
+    spawnParticles(x, y, '#ff9b54', 40);
+    addEvent('آتش‌سوزی طبیعی بخشی از زیستگاه را سوزاند.', 'climate');
+  }
+
+  function checkSpeciation() {
+    sim.lastSpeciationDay = sim.day;
+    for (const sp of [...sim.species]) {
+      if (sp.extinct) continue;
+      const pop = sim.agents.filter(a => a.status === 'alive' && a.speciesId === sp.id);
+      if (pop.length < 34 || sp.human && pop.length < 65) continue;
+      const regions = new Map();
+      for (const a of pop) {
+        const key = `${Math.floor(a.x / (WORLD_W / 3))}-${Math.floor(a.y / (WORLD_H / 3))}`;
+        if (!regions.has(key)) regions.set(key, []);
+        regions.get(key).push(a);
+      }
+      for (const [key, list] of regions) {
+        if (list.length < Math.max(16, pop.length * .18)) continue;
+        const avg = geneAverageForAgents(list);
+        let diff = 0;
+        for (const g of ['speed','strength','senses','aggression','fertility','immunity','tameness','digestionPlant','digestionMeat','size']) diff += Math.abs((avg[g] || .5) - (sp.founderGenes[g] || sp.baseGenes[g] || .5));
+        diff /= 10;
+        const isolation = distanceRegionToSpeciesCenter(list, pop) / Math.max(WORLD_W, WORLD_H);
+        if (diff + isolation * .7 > .19 && Math.random() < .36) {
+          const childTemplate = {
+            ...sp,
+            code: `branch-${sp.id}-${sim.nextSpeciesId}`,
+            name: `${sp.name} فرگشتی ${nf.format(sim.metrics.speciation + 1)}`,
+            color: randomColor(sim.nextSpeciesId + 11),
+            genes: { ...sp.baseGenes }
+          };
+          for (const g of geneKeys) childTemplate.genes[g] = clamp(avg[g] ?? sp.baseGenes[g], 0, 1);
+          const newSp = addSpecies(childTemplate, sp.id, `انشعاب از ${sp.name}`);
+          for (const a of list) if (Math.random() < .72) a.speciesId = newSp.id;
+          sim.metrics.speciation++;
+          addEvent(`تکامل: بخشی از ${sp.name} در اثر جدایی و انتخاب طبیعی به «${newSp.name}» منشعب شد.`, 'evolution');
+          break;
+        }
+      }
+    }
+    for (const sp of sim.species) {
+      if (!sp.extinct && speciesPopulation(sp.id) === 0 && sim.day - sp.bornDay > 60) {
+        sp.extinct = true;
+        sim.metrics.extinctions++;
+        addEvent(`انقراض: گونه ${sp.name} دیگر موجود زنده‌ای ندارد.`, 'extinction');
+      }
+    }
+  }
+  function distanceRegionToSpeciesCenter(list, all) {
+    const ax = all.reduce((s, a) => s + a.x, 0) / all.length, ay = all.reduce((s, a) => s + a.y, 0) / all.length;
+    const lx = list.reduce((s, a) => s + a.x, 0) / list.length, ly = list.reduce((s, a) => s + a.y, 0) / list.length;
+    return Math.hypot(lx - ax, ly - ay);
+  }
+
+  function cleanupAgents() {
+    sim.agents = sim.agents.filter(a => a.status === 'alive' || sim.day < (a.graveUntil || 0));
+  }
+  function nearbyAgents(x, y, range) { return sim.agents.filter(a => a.status === 'alive' && Math.hypot(a.x - x, a.y - y) <= range); }
+  function countNearby(a, range) { return nearbyAgents(a.x, a.y, range).length - 1; }
+  function spawnParticles(x, y, color, count) {
+    for (let i = 0; i < count; i++) sim.particles.push({ x, y, dx: rand(-1.8, 1.8), dy: rand(-2.2, 1.0), color, life: randi(24, 70), size: rand(2, 5) });
+  }
+
+  function applyGodTool(x, y) {
+    sim.spawnCount = Number(spawnCountEl.value || 1);
+    sim.brush = Number(brushSizeEl.value || 90);
+    const tool = sim.godTool;
+    if (tool === 'inspect') {
+      const a = nearestClickableAgent(x, y, 32 / sim.camera.scale + 18);
+      sim.selectedId = a ? a.id : null;
+      refreshPanels(true);
+      return;
+    }
+    sim.metrics.godActs++;
+    const pos = { x, y };
+    if (tool === 'human') {
+      const human = speciesByCode('human');
+      const g = createGroup({ speciesId: human.id, name: choice(names.groups), x, y });
+      const made = spawnSpecies(human.id, sim.spawnCount, pos, null, g.id);
+      for (const a of made) { a.groupId = g.id; addMemory(a, 'من بی‌ریشه در جهان پدیدار شدم؛ این خود یک راز است.', 3); }
+      addEvent(`خدا ${nf.format(made.length)} انسان تازه خلق کرد.`, 'god');
+      spawnParticles(x, y, '#ffd166', 30);
+    } else if (tool === 'deer') createSpeciesAt('deer', x, y);
+    else if (tool === 'wolf') createSpeciesAt('wolf', x, y);
+    else if (tool === 'rabbit') createSpeciesAt('rabbit', x, y);
+    else if (tool === 'custom') createCustomSpeciesAt(x, y);
+    else if (tool === 'water') { paintBiome(x, y, sim.brush, 'water'); addEvent('خدا آب تازه در جهان آفرید.', 'god'); }
+    else if (tool === 'forest') { paintBiome(x, y, sim.brush, 'forest'); addEvent('خدا جنگلی تازه رویاند.', 'god'); }
+    else if (tool === 'mountain') { paintBiome(x, y, sim.brush, 'mountain'); addEvent('خدا کوه و سنگ بر زمین نشاند.', 'god'); }
+    else if (tool === 'desert') { paintBiome(x, y, sim.brush, 'desert'); addEvent('خدا زمین را به بیابان خشک بدل کرد.', 'god'); }
+    else if (tool === 'foodBloom') { for (const c of cellsInCircle(x, y, sim.brush)) c.vegetation = c.maxVegetation * rand(.9, 1.25); addEvent('رویش فراوان در منطقه‌ای رخ داد.', 'god'); spawnParticles(x, y, '#8df0b2', 28); }
+    else if (tool === 'disease') { for (const a of nearbyAgents(x, y, sim.brush)) infect(a, null, 'بیماری آفریده'); addEvent('خدا بیماری تازه‌ای آفرید.', 'god'); spawnParticles(x, y, '#ffd166', 18); }
+    else if (tool === 'mutation') { for (const a of nearbyAgents(x, y, sim.brush)) divineMutate(a); addEvent('موج جهش الهی از ژنوم‌های منطقه گذشت.', 'god'); spawnParticles(x, y, '#c084fc', 30); }
+    else if (tool === 'heal') { for (const a of nearbyAgents(x, y, sim.brush)) { a.hp = clamp(a.hp + 35, 0, 100); a.energy = clamp(a.energy + 25, 0, 100); a.stress = clamp(a.stress - 35, 0, 100); a.disease = null; addMemory(a, 'بی‌دلیل آرام شدم؛ گویی جهان لحظه‌ای مهربان شد.', 4); } addEvent('شفا و آرامش در منطقه جاری شد.', 'god'); spawnParticles(x, y, '#78b7ff', 25); }
+    else if (tool === 'destroy') destroyArea(x, y, sim.brush);
+    refreshPanels(true);
+  }
+  function createSpeciesAt(code, x, y) {
+    const sp = speciesByCode(code);
+    if (!sp) return;
+    const made = spawnSpecies(sp.id, sim.spawnCount, { x, y });
+    addEvent(`خدا ${nf.format(made.length)} ${sp.name} خلق کرد.`, 'god');
+    spawnParticles(x, y, sp.color, 24);
+  }
+  function createCustomSpeciesAt(x, y) {
+    const val = k => Number((customEls[k] && customEls[k].value) || 50) / 100;
+    const diet = customEls.diet.value;
+    const plant = diet === 'carnivore' ? .05 : diet === 'herbivore' ? .95 : .55;
+    const meat = diet === 'carnivore' ? .95 : diet === 'herbivore' ? .05 : .45;
+    const template = {
+      code: `custom-${sim.nextSpeciesId}`,
+      name: customEls.name.value.trim() || 'موجود نو',
+      icon: 'نو', role: diet, color: randomColor(sim.nextSpeciesId), human: false, tamable: val('tameness') > .34,
+      adultAge: lerp(.7, 4, diet === 'herbivore' ? .35 : .55) * YEAR,
+      gestation: Math.round(lerp(38, 240, val('strength'))), litterMin: diet === 'herbivore' ? 1 : 1, litterMax: diet === 'herbivore' ? 4 : 3,
+      lifespanDays: lerp(5, 24, val('learning')) * YEAR,
+      diet: { plant, meat },
+      genes: {
+        speed: val('speed'), strength: val('strength'), senses: .52, aggression: val('aggression'), sociability: .44,
+        fertility: diet === 'herbivore' ? .64 : .42, immunity:.50, lifespan:.42, learning: val('learning'), tameness: val('tameness'),
+        digestionPlant: plant, digestionMeat: meat, toolUse: val('learning') * .2, size: val('strength'), metabolism:.55, stressResilience:.45
+      }
+    };
+    const sp = addSpecies(template);
+    const made = spawnSpecies(sp.id, sim.spawnCount, { x, y });
+    addEvent(`خدا گونه سفارشی «${sp.name}» را با ${nf.format(made.length)} فرد آفرید.`, 'god');
+    spawnParticles(x, y, sp.color, 32);
+  }
+  function paintBiome(x, y, radius, biome) {
+    const meta = biomes[biome];
+    for (const c of cellsInCircle(x, y, radius)) {
+      const d = Math.hypot(c.x + CELL / 2 - x, c.y + CELL / 2 - y);
+      if (d > radius + CELL * .5) continue;
+      c.biome = biome;
+      c.fertility = clamp(meta.fertility + rand(-.04, .08), 0, 1);
+      c.maxVegetation = meta.veg * rand(.85, 1.15);
+      c.vegetation = biome === 'water' ? 0 : clamp(Math.max(c.vegetation, c.maxVegetation * .55), 0, c.maxVegetation * 1.2);
+      c.water = biome === 'water' ? 100 : biome === 'desert' ? 0 : clamp(c.water + 20, 0, biome === 'wetland' ? 90 : 60);
+      c.ash = 0;
+    }
+    spawnParticles(x, y, meta.color, 28);
+  }
+  function destroyArea(x, y, radius) {
+    let n = 0;
+    for (const a of nearbyAgents(x, y, radius)) { killAgent(a, 'با اراده خدا نابود شد', 'god'); n++; }
+    for (const c of cellsInCircle(x, y, radius)) { c.biome = 'ash'; c.vegetation = 0; c.water = 0; c.ash = 1; }
+    addEvent(`خدا منطقه‌ای را نابود کرد؛ ${nf.format(n)} موجود از میان رفت.`, 'god');
+    spawnParticles(x, y, '#ff7878', 44);
+  }
+  function divineMutate(a) {
+    const changed = [];
+    for (const key of geneKeys) {
+      if (Math.random() < .28) {
+        const idx = Math.random() < .5 ? 0 : 1;
+        const delta = rand(-.18, .18);
+        a.genome[key][idx] = clamp(a.genome[key][idx] + delta, 0, 1);
+        changed.push(`${geneLabels[key]} ${delta > 0 ? '↑' : '↓'}`);
+      }
+    }
+    a._phenDay = -1;
+    a.mutations.push(...changed.slice(0, 4));
+    if (changed.length) addMemory(a, `بدنم تغییر کرد: ${changed.slice(0, 3).join('، ')}`, 4);
+  }
+
+  function runCommand() {
+    const raw = commandInput.value.trim();
+    if (!raw) return;
+    const cmd = raw.toLowerCase();
+    const center = screenCenterWorld();
+    const numMatch = cmd.match(/[0-9۰-۹]+/);
+    const count = numMatch ? clamp(parsePersianNumber(numMatch[0]), 1, 120) : sim.spawnCount;
+    if (cmd.includes('باران') || cmd.includes('rain')) { sim.climate.rainBoost = clamp(sim.climate.rainBoost + .6, 0, 1); addEvent('فرمان خدا: باران فراخوانده شد.', 'god'); }
+    else if (cmd.includes('خشکسالی')) { sim.climate.drought = clamp(sim.climate.drought + .55, 0, .9); addEvent('فرمان خدا: خشکسالی فراخوانده شد.', 'god'); }
+    else if (cmd.includes('نابود') || cmd.includes('destroy')) {
+      const sp = findSpeciesInText(cmd);
+      if (sp && cmd.includes('همه')) {
+        let n = 0; for (const a of sim.agents) if (a.status === 'alive' && a.speciesId === sp.id) { killAgent(a, 'فرمان نابودی گونه', 'god'); n++; }
+        addEvent(`فرمان خدا: ${nf.format(n)} فرد از گونه ${sp.name} نابود شد.`, 'god');
+      } else destroyArea(center.x, center.y, sim.brush);
+    } else if (cmd.includes('آب')) { paintBiome(center.x, center.y, sim.brush, 'water'); addEvent('فرمان خدا: آب آفریده شد.', 'god'); }
+    else if (cmd.includes('جنگل')) { paintBiome(center.x, center.y, sim.brush, 'forest'); addEvent('فرمان خدا: جنگل آفریده شد.', 'god'); }
+    else if (cmd.includes('بیماری')) { for (const a of nearbyAgents(center.x, center.y, sim.brush)) infect(a, null, 'بیماری فرمانی'); addEvent('فرمان خدا: بیماری ایجاد شد.', 'god'); }
+    else if (cmd.includes('جهش')) { for (const a of nearbyAgents(center.x, center.y, sim.brush)) divineMutate(a); addEvent('فرمان خدا: جهش ایجاد شد.', 'god'); }
+    else if (cmd.includes('خلق') || cmd.includes('create')) {
+      const sp = findSpeciesInText(cmd);
+      if (sp) { spawnSpecies(sp.id, count, center); addEvent(`فرمان خدا: ${nf.format(count)} ${sp.name} خلق شد.`, 'god'); }
+      else addEvent('فرمان فهمیده نشد؛ نام گونه را مثل انسان، گرگ، گوزن، خرگوش یا نام گونه سفارشی بنویس.', 'god');
+    } else addEvent('فرمان فهمیده نشد؛ نمونه: «خلق گرگ ۱۰»، «نابود همه گرگ»، «خلق جنگل»، «باران»، «جهش».', 'god');
+    commandInput.value = '';
+    refreshPanels(true);
+  }
+  function parsePersianNumber(str) { return Number(str.replace(/[۰-۹]/g, d => '۰۱۲۳۴۵۶۷۸۹'.indexOf(d))); }
+  function findSpeciesInText(text) {
+    const aliases = { انسان:'human', آدم:'human', human:'human', گرگ:'wolf', wolf:'wolf', گوزن:'deer', آهو:'deer', deer:'deer', خرگوش:'rabbit', rabbit:'rabbit', گراز:'boar', boar:'boar' };
+    for (const [word, code] of Object.entries(aliases)) if (text.includes(word)) return speciesByCode(code);
+    return sim.species.find(s => text.includes(s.name.toLowerCase()));
+  }
+
+  function nearestClickableAgent(x, y, radius) {
+    let best = null, bestD = radius;
+    for (const a of sim.agents) {
+      if (a.status !== 'alive') continue;
+      const d = distXY(a, x, y);
+      if (d < bestD) { bestD = d; best = a; }
+    }
+    return best;
+  }
+
+  function resizeCanvas() {
+    const rect = canvas.getBoundingClientRect();
+    sim.camera.dpr = Math.max(1, Math.min(2, window.devicePixelRatio || 1));
+    canvas.width = Math.floor(rect.width * sim.camera.dpr);
+    canvas.height = Math.floor(rect.height * sim.camera.dpr);
+    if (!sim.camera.initialized) fitWorld();
+  }
+  function fitWorld() {
+    const w = canvas.width / sim.camera.dpr, h = canvas.height / sim.camera.dpr;
+    sim.camera.scale = Math.min(w / WORLD_W, h / WORLD_H) * .98;
+    sim.camera.x = (w / sim.camera.scale - WORLD_W) / 2;
+    sim.camera.y = (h / sim.camera.scale - WORLD_H) / 2;
+    sim.camera.initialized = true;
+  }
+  function screenToWorld(clientX, clientY) {
+    const rect = canvas.getBoundingClientRect();
+    const sx = clientX - rect.left, sy = clientY - rect.top;
+    return { x: clamp(sx / sim.camera.scale - sim.camera.x, 0, WORLD_W), y: clamp(sy / sim.camera.scale - sim.camera.y, 0, WORLD_H) };
+  }
+  function screenCenterWorld() {
+    const w = canvas.width / sim.camera.dpr, h = canvas.height / sim.camera.dpr;
+    return { x: clamp(w / 2 / sim.camera.scale - sim.camera.x, 0, WORLD_W), y: clamp(h / 2 / sim.camera.scale - sim.camera.y, 0, WORLD_H) };
+  }
+  function zoomAt(factor, sx, sy) {
+    const before = { x: sx / sim.camera.scale - sim.camera.x, y: sy / sim.camera.scale - sim.camera.y };
+    sim.camera.scale = clamp(sim.camera.scale * factor, .18, 2.6);
+    sim.camera.x = sx / sim.camera.scale - before.x;
+    sim.camera.y = sy / sim.camera.scale - before.y;
+  }
+
+  function draw() {
+    const w = canvas.width / sim.camera.dpr, h = canvas.height / sim.camera.dpr;
+    ctx.save();
+    ctx.scale(sim.camera.dpr, sim.camera.dpr);
+    ctx.clearRect(0, 0, w, h);
+    ctx.fillStyle = '#050910';
+    ctx.fillRect(0, 0, w, h);
+    ctx.translate(sim.camera.x * sim.camera.scale, sim.camera.y * sim.camera.scale);
+    ctx.scale(sim.camera.scale, sim.camera.scale);
+    drawTerrain();
+    drawGroups();
+    drawAgents();
+    drawParticles();
+    drawBrush();
+    ctx.restore();
+  }
+  function visibleBounds(pad = 80) {
+    const w = canvas.width / sim.camera.dpr, h = canvas.height / sim.camera.dpr;
+    const x0 = clamp(-sim.camera.x - pad, 0, WORLD_W), y0 = clamp(-sim.camera.y - pad, 0, WORLD_H);
+    const x1 = clamp(-sim.camera.x + w / sim.camera.scale + pad, 0, WORLD_W), y1 = clamp(-sim.camera.y + h / sim.camera.scale + pad, 0, WORLD_H);
+    return { x0, y0, x1, y1, c0: Math.floor(x0 / CELL), c1: Math.ceil(x1 / CELL), r0: Math.floor(y0 / CELL), r1: Math.ceil(y1 / CELL) };
+  }
+  function drawTerrain() {
+    const b = visibleBounds(60);
+    const season = currentSeason();
+    for (let r = b.r0; r <= Math.min(ROWS - 1, b.r1); r++) for (let c = b.c0; c <= Math.min(COLS - 1, b.c1); c++) {
+      const cell = sim.terrain[cellIndex(c, r)];
+      const meta = biomes[cell.biome];
+      let color = meta.color;
+      const vegT = clamp(cell.vegetation / Math.max(1, cell.maxVegetation), 0, 1);
+      if (cell.biome !== 'water') color = mixColor(meta.color, season.name === 'زمستان' ? '#a7b2bb' : '#79a85c', vegT * .22);
+      if (cell.ash > 0) color = mixColor(color, '#1f2227', cell.ash * .8);
+      ctx.fillStyle = color;
+      ctx.fillRect(cell.x, cell.y, CELL + 1, CELL + 1);
+      if (cell.biome === 'water') {
+        ctx.strokeStyle = 'rgba(200,240,255,.14)'; ctx.lineWidth = 1;
+        const off = (sim.day * .5 + c * 7 + r * 3) % 30;
+        ctx.beginPath(); ctx.moveTo(cell.x + 3, cell.y + off); ctx.quadraticCurveTo(cell.x + 20, cell.y + off - 5, cell.x + 37, cell.y + off); ctx.stroke();
+      } else if (cell.vegetation > 45 && sim.camera.scale > .28) {
+        const n = Math.min(5, Math.floor(cell.vegetation / 24));
+        for (let i = 0; i < n; i++) {
+          const px = cell.x + hash2(c, r, i) * CELL;
+          const py = cell.y + hash2(c, r, i + 6) * CELL;
+          ctx.fillStyle = cell.biome === 'forest' ? 'rgba(18,52,24,.55)' : 'rgba(190,220,126,.22)';
+          ctx.beginPath(); ctx.arc(px, py, cell.biome === 'forest' ? 4.8 : 2.2, 0, Math.PI * 2); ctx.fill();
+        }
+      }
+    }
+    ctx.strokeStyle = 'rgba(255,255,255,.035)'; ctx.lineWidth = 1;
+    for (let x = Math.floor(b.x0 / 160) * 160; x < b.x1; x += 160) { ctx.beginPath(); ctx.moveTo(x, b.y0); ctx.lineTo(x, b.y1); ctx.stroke(); }
+    for (let y = Math.floor(b.y0 / 160) * 160; y < b.y1; y += 160) { ctx.beginPath(); ctx.moveTo(b.x0, y); ctx.lineTo(b.x1, y); ctx.stroke(); }
+  }
+  function drawGroups() {
+    for (const g of sim.groups) {
+      if (!g.members.length) continue;
+      const members = sim.agents.filter(a => a.status === 'alive' && a.groupId === g.id && getSpecies(a.speciesId)?.human);
+      if (!members.length) continue;
+      const radius = 70 + Math.sqrt(members.length) * 28;
+      ctx.fillStyle = 'rgba(244,195,126,.045)';
+      ctx.strokeStyle = 'rgba(244,195,126,.20)'; ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.arc(g.x, g.y, radius, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+      if (sim.camera.scale > .32) {
+        ctx.font = '700 20px Tahoma, Arial'; ctx.textAlign = 'center'; ctx.fillStyle = 'rgba(255,235,196,.92)';
+        ctx.fillText(`گروه ${g.name}`, g.x, g.y - radius - 10);
+        const techs = Object.entries(g.tech).filter(([,v]) => v).length;
+        if (techs) { ctx.font = '14px Tahoma, Arial'; ctx.fillText(`${nf.format(techs)} فناوری`, g.x, g.y - radius + 10); }
+      }
+    }
+  }
+  function drawAgents() {
+    const b = visibleBounds(80);
+    const selected = findAgent(sim.selectedId);
+    const visible = sim.agents.filter(a => a.x >= b.x0 && a.x <= b.x1 && a.y >= b.y0 && a.y <= b.y1).sort((a, b) => a.y - b.y);
+    for (const a of visible) {
+      if (a.status === 'dead') { drawCorpse(a); continue; }
+      const sp = getSpecies(a.speciesId), ph = phenotype(a);
+      const size = 5 + ph.size * 9;
+      if (a.disease) { ctx.strokeStyle = 'rgba(255,209,102,.9)'; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(a.x, a.y, size + 7, 0, Math.PI * 2); ctx.stroke(); }
+      if (a.pregnancy) { ctx.fillStyle = 'rgba(141,240,178,.25)'; ctx.beginPath(); ctx.arc(a.x, a.y, size + 5, 0, Math.PI * 2); ctx.fill(); }
+      if (sp.human) drawHuman(a, size); else if (sp.role === 'carnivore') drawPredator(a, size); else if (sp.code === 'rabbit') drawRabbit(a, size); else drawHerbivore(a, size);
+      if (a.id === sim.hoverId || a.id === sim.selectedId) {
+        ctx.strokeStyle = a.id === sim.selectedId ? '#fff' : 'rgba(255,255,255,.55)'; ctx.lineWidth = 2.2;
+        ctx.beginPath(); ctx.arc(a.x, a.y, size + 11, 0, Math.PI * 2); ctx.stroke();
+      }
+      if (a.hp < 45 || a.hunger > 86 || a.thirst > 86) {
+        ctx.fillStyle = 'rgba(255,120,120,.9)'; ctx.fillRect(a.x - size, a.y - size - 12, size * 2 * clamp(a.hp / 100, 0, 1), 3);
+      }
+      if (a.domesticated) {
+        ctx.strokeStyle = 'rgba(141,240,178,.75)'; ctx.lineWidth = 1.5;
+        ctx.beginPath(); ctx.arc(a.x, a.y, size + 3, 0, Math.PI * 2); ctx.stroke();
+      }
+    }
+    if (selected && selected.status === 'alive') drawThoughtBubble(selected);
+  }
+  function drawHuman(a, size) {
+    const sp = getSpecies(a.speciesId), g = getGroup(a.groupId);
+    ctx.strokeStyle = sp.color; ctx.fillStyle = sp.color; ctx.lineWidth = 2.4;
+    ctx.beginPath(); ctx.arc(a.x, a.y - size * .72, size * .42, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.moveTo(a.x, a.y - size * .25); ctx.lineTo(a.x, a.y + size * .78); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(a.x - size * .68, a.y + size * .05); ctx.lineTo(a.x + size * .68, a.y + size * .05); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(a.x, a.y + size * .78); ctx.lineTo(a.x - size * .55, a.y + size * 1.35); ctx.moveTo(a.x, a.y + size * .78); ctx.lineTo(a.x + size * .55, a.y + size * 1.35); ctx.stroke();
+    if (g?.tech.tools) { ctx.strokeStyle = '#d9e5ef'; ctx.lineWidth = 1.6; ctx.beginPath(); ctx.moveTo(a.x + size * .7, a.y - size * .3); ctx.lineTo(a.x + size * 1.25, a.y - size * 1.05); ctx.stroke(); }
+  }
+  function drawHerbivore(a, size) {
+    const sp = getSpecies(a.speciesId);
+    ctx.fillStyle = sp.color; ctx.strokeStyle = 'rgba(0,0,0,.38)'; ctx.lineWidth = 1.6;
+    ctx.beginPath(); ctx.ellipse(a.x, a.y, size * 1.05, size * .58, 0, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+    ctx.beginPath(); ctx.arc(a.x + size * .95, a.y - size * .22, size * .36, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+    ctx.strokeStyle = sp.color; ctx.lineWidth = 2;
+    for (const lx of [-.55, .15, .55]) { ctx.beginPath(); ctx.moveTo(a.x + lx * size, a.y + size * .42); ctx.lineTo(a.x + lx * size, a.y + size * 1.2); ctx.stroke(); }
+  }
+  function drawPredator(a, size) {
+    const sp = getSpecies(a.speciesId);
+    ctx.fillStyle = sp.color; ctx.strokeStyle = 'rgba(0,0,0,.45)'; ctx.lineWidth = 1.5;
+    ctx.beginPath(); ctx.ellipse(a.x, a.y, size * 1.05, size * .52, 0, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(a.x + size * .9, a.y - size * .48); ctx.lineTo(a.x + size * 1.55, a.y); ctx.lineTo(a.x + size * .9, a.y + size * .42); ctx.closePath(); ctx.fill(); ctx.stroke();
+    ctx.fillStyle = '#111'; ctx.beginPath(); ctx.arc(a.x + size * 1.28, a.y - size * .1, Math.max(1.4, size * .12), 0, Math.PI * 2); ctx.fill();
+    ctx.strokeStyle = sp.color; for (const lx of [-.5, .2, .65]) { ctx.beginPath(); ctx.moveTo(a.x + lx * size, a.y + size * .38); ctx.lineTo(a.x + lx * size, a.y + size * 1.05); ctx.stroke(); }
+  }
+  function drawRabbit(a, size) {
+    const sp = getSpecies(a.speciesId);
+    ctx.fillStyle = sp.color; ctx.strokeStyle = 'rgba(0,0,0,.35)'; ctx.lineWidth = 1.4;
+    ctx.beginPath(); ctx.ellipse(a.x, a.y, size * .75, size * .5, 0, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+    ctx.beginPath(); ctx.arc(a.x + size * .65, a.y - size * .25, size * .32, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+    ctx.beginPath(); ctx.ellipse(a.x + size * .65, a.y - size * .82, size * .12, size * .45, -.1, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+    ctx.beginPath(); ctx.ellipse(a.x + size * .95, a.y - size * .78, size * .12, size * .42, .12, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+  }
+  function drawCorpse(a) {
+    ctx.strokeStyle = getSpecies(a.speciesId)?.human ? 'rgba(240,240,240,.6)' : 'rgba(255,255,255,.34)'; ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.moveTo(a.x - 7, a.y + 7); ctx.lineTo(a.x + 7, a.y - 7); ctx.moveTo(a.x - 7, a.y - 7); ctx.lineTo(a.x + 7, a.y + 7); ctx.stroke();
+  }
+  function drawThoughtBubble(a) {
+    const text = a.thought || '...';
+    ctx.font = '15px Tahoma, Arial';
+    const maxW = 420;
+    const lines = wrapText(text, maxW - 22);
+    const width = Math.min(maxW, Math.max(150, ...lines.map(l => ctx.measureText(l).width + 26)));
+    const height = lines.length * 22 + 18;
+    const x = clamp(a.x, width / 2 + 8, WORLD_W - width / 2 - 8);
+    const y = clamp(a.y - height - 56, 8, WORLD_H - height - 8);
+    ctx.fillStyle = 'rgba(5,10,17,.78)'; roundRect(ctx, x - width / 2, y, width, height, 16, true, false);
+    ctx.strokeStyle = 'rgba(120,183,255,.58)'; ctx.stroke();
+    ctx.textAlign = 'right'; ctx.fillStyle = '#eef7ff';
+    lines.forEach((line, i) => ctx.fillText(line, x + width / 2 - 12, y + 25 + i * 22));
+  }
+  function wrapText(text, maxW) {
+    const words = String(text).split(' '), lines = []; let line = '';
+    for (const w of words) {
+      const trial = line ? `${line} ${w}` : w;
+      if (ctx.measureText(trial).width > maxW && line) { lines.push(line); line = w; }
+      else line = trial;
+    }
+    if (line) lines.push(line);
+    return lines.slice(0, 4);
+  }
+  function drawParticles() {
+    for (const p of sim.particles) {
+      p.x += p.dx; p.y += p.dy; p.dy += .025;
+      ctx.fillStyle = hexToRgba(p.color.startsWith('#') ? p.color : '#ffffff', clamp(p.life / 70, 0, 1));
+      ctx.beginPath(); ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2); ctx.fill();
+    }
+  }
+  function drawBrush() {
+    if (sim.godTool === 'inspect') return;
+    const center = sim.pointerWorld || screenCenterWorld();
+    ctx.strokeStyle = sim.godTool === 'destroy' ? 'rgba(255,120,120,.42)' : 'rgba(255,209,102,.32)';
+    ctx.lineWidth = 2;
+    ctx.setLineDash([10, 9]);
+    ctx.beginPath(); ctx.arc(center.x, center.y, sim.brush, 0, Math.PI * 2); ctx.stroke();
+    ctx.setLineDash([]);
+  }
+  function roundRect(c, x, y, w, h, r, fill, stroke) {
+    r = Math.min(r, w / 2, h / 2);
+    c.beginPath(); c.moveTo(x + r, y); c.arcTo(x + w, y, x + w, y + h, r); c.arcTo(x + w, y + h, x, y + h, r); c.arcTo(x, y + h, x, y, r); c.arcTo(x, y, x + w, y, r); c.closePath(); if (fill) c.fill(); if (stroke) c.stroke();
+  }
+
+  function renderStats() {
+    const alive = livingAgents();
+    const humans = alive.filter(a => getSpecies(a.speciesId)?.human).length;
+    const predators = alive.filter(a => getSpecies(a.speciesId)?.role === 'carnivore').length;
+    const herbivores = alive.filter(a => getSpecies(a.speciesId)?.role === 'herbivore').length;
+    const veg = sim.terrain.reduce((s, c) => s + c.vegetation, 0) / sim.terrain.length;
+    const sick = alive.filter(a => a.disease).length;
+    const activeSpecies = sim.species.filter(s => !s.extinct && speciesPopulation(s.id) > 0).length;
+    statsEl.innerHTML = [
+      ['سال/روز', `سال ${nf.format(yearOf())}، روز ${nf.format(dayOfYear())}`],
+      ['جمعیت کل', nf.format(alive.length)],
+      ['انسان', nf.format(humans)],
+      ['گیاه‌خوار/شکارچی', `${nf.format(herbivores)} / ${nf.format(predators)}`],
+      ['گونه زنده', nf.format(activeSpecies)],
+      ['پوشش گیاهی', pct(veg / 100)],
+      ['بیمار', nf.format(sick)],
+      ['تکامل/اهلی‌سازی', `${nf.format(sim.metrics.speciation)} / ${nf.format(sim.metrics.domestications)}`]
+    ].map(([k, v]) => `<div class="stat-card"><span>${k}</span><b>${v}</b></div>`).join('');
+    const season = currentSeason();
+    seasonPill.textContent = `${season.name} · دما ${pct(sim.climate.temperature)} · خشکسالی ${pct(sim.climate.drought)}`;
+  }
+  function renderSelected() {
+    const a = findAgent(sim.selectedId);
+    if (!a || a.status !== 'alive') {
+      selectedPanel.innerHTML = '<div class="empty-state">هنوز موجودی انتخاب نشده. روی هر موجود در نقشه لمس کن تا فکر، خاطرات، ژنوم و زندگی‌اش را ببینی.</div>';
+      return;
+    }
+    const sp = getSpecies(a.speciesId), ph = phenotype(a), g = getGroup(a.groupId);
+    const parents = a.parents.map(id => findAgent(id)?.name).filter(Boolean).join('، ') || 'نامعلوم';
+    const children = a.children.map(id => findAgent(id)?.name).filter(Boolean).slice(0, 8).join('، ') || 'ندارد';
+    const mate = findAgent(a.mateId);
+    const memories = a.memory.slice(0, 8).map(m => `<li><b>روز ${nf.format(m.day)}:</b> ${escapeHtml(m.text)}</li>`).join('') || '<li>خاطره برجسته‌ای ثبت نشده.</li>';
+    const genes = ['speed','strength','senses','aggression','sociability','fertility','immunity','learning','tameness','toolUse','size'].map(k => `<li>${geneLabels[k]}: ${pct(ph[k])} <small>(${f1.format(a.genome[k][0]*100)} / ${f1.format(a.genome[k][1]*100)})</small></li>`).join('');
+    const skills = sp.human ? Object.entries(a.skills).map(([k, v]) => `<li>${skillLabel(k)}: ${pct(v)}</li>`).join('') : `<li>حافظه فضایی: ${pct(a.skills.memory || 0)}</li>`;
+    selectedPanel.innerHTML = `
+      <div class="person-head"><strong>${escapeHtml(a.name)}</strong><span class="badge">${escapeHtml(sp.name)} · ${a.gender === 'female' ? 'ماده/زن' : 'نر/مرد'}</span></div>
+      <div class="badges">
+        <span class="badge">${sp.role === 'carnivore' ? 'گوشت‌خوار' : sp.role === 'herbivore' ? 'گیاه‌خوار' : 'همه‌چیزخوار'}</span>
+        <span class="badge">${g ? 'گروه ' + escapeHtml(g.name) : 'بی‌گروه'}</span>
+        ${a.domesticated ? '<span class="badge">اهلی/رام‌شده</span>' : ''}
+        ${a.pregnancy ? '<span class="badge">باردار</span>' : ''}
+        ${a.disease ? `<span class="badge">بیمار: ${escapeHtml(a.disease.name)}</span>` : ''}
+      </div>
+      <div class="thought-box">«${escapeHtml(a.thought || 'فکری ثبت نشده.')}»</div>
+      <div class="mini-grid">
+        ${mini('سن', ageText(a.age))}
+        ${mini('هدف فعلی', goalLabel(a.goal))}
+        ${miniBar('سلامت', a.hp / 100)}
+        ${miniBar('انرژی', a.energy / 100)}
+        ${miniBar('گرسنگی', a.hunger / 100)}
+        ${miniBar('تشنگی', a.thirst / 100)}
+        ${miniBar('استرس', a.stress / 100)}
+        ${mini('نسل', nf.format(a.generation))}
+      </div>
+      <div class="mini">والدین<b>${escapeHtml(parents)}</b></div>
+      <div class="mini">همسر/جفت<b>${mate ? escapeHtml(mate.name) : 'ندارد'}</b></div>
+      <div class="mini">فرزندان<b>${escapeHtml(children)}</b></div>
+      <h3 class="subhead">حافظه و زندگی</h3><ul class="list">${memories}</ul>
+      <h3 class="subhead">مهارت/یادگیری</h3><ul class="list">${skills}</ul>
+      <h3 class="subhead">ژنوم فردی؛ فنوتیپ و دو آلل</h3><ul class="list">${genes}</ul>
+      <h3 class="subhead">جهش‌ها و ریسک ژنتیکی</h3><ul class="list"><li>بار ژنتیکی: ${pct(a.geneticLoad || 0)}</li><li>${a.mutations?.length ? escapeHtml(a.mutations.slice(-8).join('، ')) : 'جهش برجسته ثبت نشده.'}</li></ul>
+    `;
+  }
+  function mini(k, v) { return `<div class="mini">${k}<b>${v}</b></div>`; }
+  function miniBar(k, v) { return `<div class="mini">${k}<b>${pct(v)}</b><div class="bar"><i style="width:${clamp(v,0,1)*100}%"></i></div></div>`; }
+  function goalLabel(g) {
+    return ({ flee:'فرار', drink:'نوشیدن', water:'جستجوی آب', food:'جستجوی غذا', forage:'چریدن/جمع‌آوری', hunt:'شکار', heal:'درمان', farm:'کشاورزی', learn:'یادگیری', mate:'جفت‌یابی', rest:'استراحت', explore:'کاوش', 'follow-humans':'همراهی انسان', 'return-group':'بازگشت به گروه' })[g] || g || 'نامعلوم';
+  }
+  function renderSpecies() {
+    const cards = [...sim.species]
+      .sort((a,b) => speciesPopulation(b.id) - speciesPopulation(a.id))
+      .map(sp => {
+        const pop = speciesPopulation(sp.id);
+        const avg = geneAverageForAgents(sim.agents.filter(a => a.status === 'alive' && a.speciesId === sp.id));
+        const top = Object.entries(avg).sort((a,b) => b[1] - a[1]).slice(0,3).map(([k,v]) => `${geneLabels[k]} ${pct(v)}`).join(' · ');
+        return `<div class="species-card"><header><b style="color:${sp.color}">${escapeHtml(sp.name)}</b><span class="badge">${nf.format(pop)}</span></header><small>${sp.extinct ? 'منقرض' : sp.role === 'carnivore' ? 'گوشت‌خوار' : sp.role === 'herbivore' ? 'گیاه‌خوار' : 'همه‌چیزخوار'} · نسل از ${sp.parentId ? escapeHtml(getSpecies(sp.parentId)?.name || 'ناشناخته') : 'بنیادین'} · رام‌شده‌ها ${nf.format(sp.domesticatedCount)}</small><small>${top || 'بدون نمونه زنده'}</small></div>`;
+      }).join('');
+    speciesPanel.innerHTML = cards || '<div class="empty-state">گونه‌ای وجود ندارد.</div>';
+  }
+  function renderChecklist() {
+    checklistPanel.innerHTML = checklist.map(([title, text]) => `<div class="check-item"><span class="check-dot"></span><div><b>${escapeHtml(title)}</b><br>${escapeHtml(text)}</div></div>`).join('');
+  }
+  function renderEvents() {
+    eventLog.innerHTML = sim.events.slice(0, 42).map(e => `<div class="event ${e.type}"><strong>روز ${nf.format(e.day)}:</strong> ${escapeHtml(e.text)}</div>`).join('') || '<div class="empty-state">هنوز رویدادی ثبت نشده.</div>';
+  }
+  function refreshPanels(force = false) {
+    if (!force && sim.day - sim.lastPanelRefresh < 5) return;
+    sim.lastPanelRefresh = sim.day;
+    renderStats(); renderSelected(); renderSpecies(); renderEvents();
+  }
+
+  function buildTools() {
+    godToolsEl.innerHTML = godTools.map(t => `<button data-tool="${t.id}" class="${t.className || ''}" title="${escapeHtml(t.title)}">${escapeHtml(t.label)}</button>`).join('');
+    godToolsEl.addEventListener('click', e => {
+      const btn = e.target.closest('button[data-tool]');
+      if (!btn) return;
+      sim.godTool = btn.dataset.tool;
+      updateToolButtons();
+    });
+    updateToolButtons();
+  }
+  function updateToolButtons() {
+    for (const btn of godToolsEl.querySelectorAll('button')) btn.classList.toggle('active', btn.dataset.tool === sim.godTool);
+    const tool = godTools.find(t => t.id === sim.godTool);
+    toolPill.textContent = `ابزار: ${tool ? tool.label : sim.godTool}`;
+  }
+
+  function bindUI() {
+    window.addEventListener('resize', resizeCanvas);
+    canvas.addEventListener('pointerdown', e => {
+      canvas.setPointerCapture(e.pointerId);
+      sim.camera.dragging = true; sim.camera.moved = false; sim.camera.lastX = e.clientX; sim.camera.lastY = e.clientY; sim.camera.downX = e.clientX; sim.camera.downY = e.clientY;
+    });
+    canvas.addEventListener('pointermove', e => {
+      const pos = screenToWorld(e.clientX, e.clientY);
+      sim.pointerWorld = pos;
+      const h = nearestClickableAgent(pos.x, pos.y, 28 / sim.camera.scale + 10);
+      sim.hoverId = h ? h.id : null;
+      if (sim.camera.dragging) {
+        const dx = e.clientX - sim.camera.lastX, dy = e.clientY - sim.camera.lastY;
+        if (Math.hypot(e.clientX - sim.camera.downX, e.clientY - sim.camera.downY) > 7) sim.camera.moved = true;
+        sim.camera.x += dx / sim.camera.scale; sim.camera.y += dy / sim.camera.scale;
+        sim.camera.lastX = e.clientX; sim.camera.lastY = e.clientY;
+      }
+    });
+    canvas.addEventListener('pointerup', e => {
+      const pos = screenToWorld(e.clientX, e.clientY);
+      if (!sim.camera.moved) applyGodTool(pos.x, pos.y);
+      sim.camera.dragging = false;
+    });
+    canvas.addEventListener('pointercancel', () => { sim.camera.dragging = false; });
+    canvas.addEventListener('wheel', e => {
+      e.preventDefault();
+      const rect = canvas.getBoundingClientRect();
+      zoomAt(e.deltaY < 0 ? 1.12 : .88, e.clientX - rect.left, e.clientY - rect.top);
+    }, { passive: false });
+    zoomInBtn.addEventListener('click', () => zoomAt(1.18, canvas.clientWidth / 2, canvas.clientHeight / 2));
+    zoomOutBtn.addEventListener('click', () => zoomAt(.84, canvas.clientWidth / 2, canvas.clientHeight / 2));
+    fitBtn.addEventListener('click', fitWorld);
+    pauseBtn.addEventListener('click', () => { sim.paused = !sim.paused; pauseBtn.textContent = sim.paused ? 'ادامه' : 'توقف'; });
+    resetBtn.addEventListener('click', setupWorld);
+    saveBtn.addEventListener('click', saveWorld);
+    loadBtn.addEventListener('click', loadWorld);
+    speedSlider.addEventListener('input', () => { sim.speed = Number(speedSlider.value); speedValue.textContent = `${nf.format(sim.speed)} روز/ثانیه`; });
+    capSlider.addEventListener('input', () => { sim.maxAgents = Number(capSlider.value); capValue.textContent = nf.format(sim.maxAgents); });
+    brushSizeEl.addEventListener('input', () => { sim.brush = Number(brushSizeEl.value); brushValue.textContent = nf.format(sim.brush); });
+    spawnCountEl.addEventListener('input', () => { sim.spawnCount = Number(spawnCountEl.value || 1); });
+    runCommandBtn.addEventListener('click', runCommand);
+    commandInput.addEventListener('keydown', e => { if (e.key === 'Enter') runCommand(); });
+  }
+
+  function saveWorld() {
+    try {
+      const snapshot = JSON.stringify({
+        day: sim.day, speed: sim.speed, maxAgents: sim.maxAgents, terrain: sim.terrain, agents: sim.agents, species: sim.species, groups: sim.groups, events: sim.events,
+        nextAgentId: sim.nextAgentId, nextSpeciesId: sim.nextSpeciesId, nextGroupId: sim.nextGroupId, seed: sim.seed, climate: sim.climate, metrics: sim.metrics
+      });
+      localStorage.setItem(SAVE_KEY, snapshot);
+      addEvent('جهان در حافظه مرورگر ذخیره شد.', 'god'); refreshPanels(true);
+    } catch (err) { addEvent('ذخیره‌سازی شکست خورد؛ احتمالاً حافظه مرورگر پر است.', 'conflict'); }
+  }
+  function loadWorld() {
+    try {
+      const raw = localStorage.getItem(SAVE_KEY);
+      if (!raw) { addEvent('ذخیره‌ای پیدا نشد.', 'conflict'); refreshPanels(true); return; }
+      const data = JSON.parse(raw);
+      Object.assign(sim, data);
+      sim.selectedId = null; sim.hoverId = null; sim.godTool = 'inspect'; sim.accumulated = 0; sim.paused = false;
+      for (const a of sim.agents) { a._phen = null; a._phenDay = -1; }
+      updateToolButtons(); resizeCanvas(); addEvent('جهان ذخیره‌شده بارگذاری شد.', 'god'); refreshPanels(true);
+    } catch (err) { addEvent('بارگذاری شکست خورد؛ داده ذخیره‌شده خراب یا قدیمی است.', 'conflict'); }
+  }
+
+  function frame(now) {
+    if (!frame.last) frame.last = now;
+    const dt = Math.min(.08, (now - frame.last) / 1000);
+    frame.last = now;
+    if (!sim.paused) {
+      sim.accumulated += dt * sim.speed;
+      let steps = 0;
+      while (sim.accumulated >= 1 && steps < 10) { simulateDay(); sim.accumulated -= 1; steps++; }
+    }
+    draw();
+    refreshPanels(false);
+    requestAnimationFrame(frame);
+  }
+
+  function init() {
+    buildTools(); bindUI(); renderChecklist(); setupWorld(); requestAnimationFrame(frame);
+    if ('serviceWorker' in navigator && location.protocol.startsWith('http')) {
+      navigator.serviceWorker.register('sw.js').catch(() => {});
+    }
+  }
+
+  init();
+})();
+
+  </script>
+</body>
+</html>
